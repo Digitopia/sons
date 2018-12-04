@@ -10,6 +10,7 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "array.prototype.flat": "^1.2.1",
     "lodash": "^4.17.11",
     "register-service-worker": "^1.5.2",
     "sass-loader": "^7.1.0",

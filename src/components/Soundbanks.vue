@@ -38,6 +38,7 @@
 <script>
 import { store } from '../store';
 import Tone from 'tone';
+import flat from 'array.prototype.flat';
 
 // make v-holder work (since CDN didn't do the trick)
 import VueHolder from 'vue-holderjs';
@@ -72,7 +73,8 @@ export default {
             const conf = this.shared.banks.find(bank => bank.id === bankId);
             const path = `sounds/${bankId}`;
             const sounds = Object.values(conf.sounds);
-            const urls = sounds.flat().map(sound => `${path}/${sound.sample}`);
+            const flatten = flat(sounds);
+            const urls = flatten.map(sound => `${path}/${sound.sample}`);
             let mappings = {};
             urls.forEach(url => {
                 const key = url.split('/').slice(-1);
