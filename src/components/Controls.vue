@@ -1,24 +1,39 @@
 <template>
-    <div id="controls">
-        <i class="fa fa-expand" id="fullscreen" @click="fullscreen"></i>
-        <i
-            id="play"
-            class="far"
-            :class="playing ? 'fa-stop-circle' : 'fa-play-circle'"
-            @click="play"
-        ></i>
-        <i id="record" class="far fa-dot-circle" :class="{recording: recording}" @click="record"></i>
-        <div class="control-text">FULLSCREEN</div>
-        <div class="control-text">{{ playing ? "STOP" : "PLAY"}}</div>
-        <div class="control-text">REC</div>
+  <div id="controls">
+    <i
+      id="fullscreen"
+      class="fa fa-expand"
+      @click="fullscreen"
+    />
+    <i
+      id="play"
+      class="far"
+      :class="playing ? 'fa-stop-circle' : 'fa-play-circle'"
+      @click="play"
+    />
+    <i
+      id="record"
+      class="far fa-dot-circle"
+      :class="{recording: recording}"
+      @click="record"
+    />
+    <div class="control-text">
+      FULLSCREEN
     </div>
+    <div class="control-text">
+      {{ playing ? "STOP" : "PLAY" }}
+    </div>
+    <div class="control-text">
+      REC
+    </div>
+  </div>
 </template>
 
 <script>
 
-import screenfull from 'screenfull';
-import Tone from 'tone';
-import FileSaver from 'file-saver';
+import screenfull from 'screenfull'
+import Tone from 'tone'
+import FileSaver from 'file-saver'
 
 export default {
     name: 'Controls',
@@ -26,27 +41,27 @@ export default {
         return {
             playing: false,
             recording: false
-        };
+        }
     },
     mounted() {
         this.$root.$on('stop', () => {
-            this.playing = false;
-        });
+            this.playing = false
+        })
         this.recorder = new Recorder(Tone.Master.input)
     },
     methods: {
         play() {
-            if (Tone.context.state === 'suspended') Tone.context.resume();
-            this.playing = !this.playing;
+            if (Tone.context.state === 'suspended') Tone.context.resume()
+            this.playing = !this.playing
             if (this.playing) {
-                Tone.Transport.position = '0:0:0';
-                Tone.Transport.start();
+                Tone.Transport.position = '0:0:0'
+                Tone.Transport.start()
             } else {
-                Tone.Transport.stop();
+                Tone.Transport.stop()
             }
         },
         record() {
-            this.recording = !this.recording;
+            this.recording = !this.recording
             if (this.recording) {
                 this.recorder.record()
             } else {
@@ -57,11 +72,11 @@ export default {
             }
         },
         fullscreen() {
-            console.log('fullscreen');
-            if (screenfull.enabled) screenfull.toggle();
+            console.log('fullscreen')
+            if (screenfull.enabled) screenfull.toggle()
         }
     }
-};
+}
 </script>
 
 <style lang="scss">

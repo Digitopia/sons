@@ -36,14 +36,14 @@
 </template>
 
 <script>
-import { store } from '../store';
-import Tone from 'tone';
-import flat from 'array.prototype.flat';
+import { store } from '../store'
+import Tone from 'tone'
+import flat from 'array.prototype.flat'
 
 // make v-holder work (since CDN didn't do the trick)
-import VueHolder from 'vue-holderjs';
-import Vue from 'vue';
-Vue.use(VueHolder);
+import VueHolder from 'vue-holderjs'
+import Vue from 'vue'
+Vue.use(VueHolder)
 
 export default {
     name: 'Soundbanks',
@@ -51,73 +51,73 @@ export default {
         return {
             shared: store.state,
             activeSound: undefined
-        };
+        }
     },
     computed: {
         bank() {
             return this.shared.banks.find(
                 bank => bank.id === this.shared.bankId
-            );
+            )
         }
     },
     mounted() {
-        this.loadBank(this.shared.bankId);
+        this.loadBank(this.shared.bankId)
     },
     methods: {
         loadBank(bankId) {
-            console.log(`Trying to load bank ${bankId}`);
+            console.log(`Trying to load bank ${bankId}`)
             if (this.shared.players[bankId]) {
-                console.log(`Soundbank ${bankId} is already loaded`);
-                return;
+                console.log(`Soundbank ${bankId} is already loaded`)
+                return
             }
-            const conf = this.shared.banks.find(bank => bank.id === bankId);
-            const path = `sounds/${bankId}`;
-            const sounds = Object.values(conf.sounds);
-            const flatten = flat(sounds);
-            const urls = flatten.map(sound => `${path}/${sound.sample}`);
-            let mappings = {};
+            const conf = this.shared.banks.find(bank => bank.id === bankId)
+            const path = `sounds/${bankId}`
+            const sounds = Object.values(conf.sounds)
+            const flatten = flat(sounds)
+            const urls = flatten.map(sound => `${path}/${sound.sample}`)
+            let mappings = {}
             urls.forEach(url => {
-                const key = url.split('/').slice(-1);
-                if (url !== '') mappings[key] = url;
-            });
+                const key = url.split('/').slice(-1)
+                if (url !== '') mappings[key] = url
+            })
             store.addPlayersToBank(
                 new Tone.Players(mappings).toMaster(),
                 bankId
-            );
+            )
             console.log(`Loaded bank ${bankId}`)
         },
         change(dir) {
-            let idx = this.getBankIdx(this.shared.bankId);
-            idx += dir;
+            let idx = this.getBankIdx(this.shared.bankId)
+            idx += dir
             if (idx > this.shared.banks.length - 1) {
-                idx = this.shared.banks.length - 1;
-                return;
+                idx = this.shared.banks.length - 1
+                return
             } else if (idx < 0) {
-                idx = 0;
-                return;
+                idx = 0
+                return
             }
-            const bankId = this.shared.banks[idx].id;
-            store.changeBankId(bankId);
-            this.loadBank(bankId);
-            this.$root.$emit('soundbank-change', bankId);
+            const bankId = this.shared.banks[idx].id
+            store.changeBankId(bankId)
+            this.loadBank(bankId)
+            this.$root.$emit('soundbank-change', bankId)
         },
         getBankIdx(bankId) {
-            const ids = this.shared.banks.map(bank => bank.id);
-            const idx = ids.findIndex(id => id === bankId);
-            return idx;
+            const ids = this.shared.banks.map(bank => bank.id)
+            const idx = ids.findIndex(id => id === bankId)
+            return idx
         },
         drag(evt) {
             evt.dataTransfer.setData(
                 'sample',
                 evt.target.getAttribute('data-sample')
-            );
-            evt.dataTransfer.setData('src', evt.target.src);
+            )
+            evt.dataTransfer.setData('src', evt.target.src)
         },
         touchstart(sound) {
-            this.activeSound = sound !== this.activeSound ? sound : undefined;
+            this.activeSound = sound !== this.activeSound ? sound : undefined
         }
     }
-};
+}
 </script>
 
 <style lang="scss">

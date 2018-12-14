@@ -56,10 +56,9 @@
       "plugin:vue/essential"
     ],
     "rules": {
-      "semi": "off",
+      "semi": ["error", "never"],
       "indent": [
-        "off",
-        4
+        "error", 4
       ],
       "quotes": [
         "error",

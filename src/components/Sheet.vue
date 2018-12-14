@@ -1,15 +1,34 @@
 <template>
-    <div id="sheetContainer" :class="{hide: !shared.showSheet}">
-        <svg id="sheet" charset="utf-8">
-            <text id="numerator" class="time-signature" :x="num.x" :y="num.y" v-html="numChar"></text>
-            <text id="denominator" class="time-signature" :x="denom.x" :y="denom.y">&#57476;</text>
-        </svg>
-    </div>
+  <div
+    id="sheetContainer"
+    :class="{hide: !shared.showSheet}"
+  >
+    <svg
+      id="sheet"
+      charset="utf-8"
+    >
+      <text
+        id="numerator"
+        class="time-signature"
+        :x="num.x"
+        :y="num.y"
+        v-html="numChar"
+      />
+      <text
+        id="denominator"
+        class="time-signature"
+        :x="denom.x"
+        :y="denom.y"
+      >
+        &#57476;
+      </text>
+    </svg>
+  </div>
 </template>
 
 <script>
-import { store } from '../store';
-import Snap from 'snapsvg';
+import { store } from '../store'
+import Snap from 'snapsvg'
 
 export default {
     name: 'Sheet',
@@ -37,181 +56,181 @@ export default {
                 y: undefined
             },
             shared: store.state
-        };
-    },
-    watch: {
-        dot: function() {
-            this.num.val = this.dot;
         }
     },
     computed: {
         dot: function() {
-            return store.state.dot;
+            return store.state.dot
         },
         dots: function() {
-            return store.state.dots;
+            return store.state.dots
         },
         numChar: function() {
             switch (this.num.val) {
-                case 2:
-                    return '&#57474;';
-                case 3:
-                    return '&#57475;';
-                case 4:
-                default:
-                    return '&#57476;';
+            case 2:
+                return '&#57474;'
+            case 3:
+                return '&#57475;'
+            case 4:
+            default:
+                return '&#57476;'
             }
+        }
+    },
+    watch: {
+        dot: function() {
+            this.num.val = this.dot
         }
     },
     created() {
         this.$root.$on('sample-changed', () => {
-            this.draw();
-        });
+            this.draw()
+        })
         this.$root.$on('soundbank-change-next', () => {
-            this.draw();
-        });
+            this.draw()
+        })
     },
     mounted() {
-        this.snap = Snap('#sheet');
+        this.snap = Snap('#sheet')
         // this.snap.node.setAttribute('viewBox', '0 0 100 100');
         // this.$root.$on('custom-resize', this.resize);
-        this.init();
+        this.init()
     },
     methods: {
         resize() {
-            this.snap.clear();
-            this.init();
+            this.snap.clear()
+            this.init()
         },
         reset() {
             this.dots.forEach(dot => {
-                if (dot.sheetImage) dot.sheetImage.remove();
+                if (dot.sheetImage) dot.sheetImage.remove()
                 if (dot.sheetElem) {
-                    dot.sheetElem.remove();
+                    dot.sheetElem.remove()
                 }
-            });
+            })
         },
         init() {
             const w =
                 this.snap.node.clientWidth ||
-                this.snap.node.getBoundingClientRect().width;
+                this.snap.node.getBoundingClientRect().width
             const h =
                 this.snap.node.clientHeight ||
-                this.snap.node.getBoundingClientRect().height;
-            const px = this.px;
-            const py = this.py;
-            const x1 = px;
-            const x2 = w - px;
+                this.snap.node.getBoundingClientRect().height
+            const px = this.px
+            const py = this.py
+            const x1 = px
+            const x2 = w - px
 
             // Draw lines
-            const n = 5;
-            const ys = [];
+            const n = 5
+            const ys = []
             for (let i = 0; i < n; i += 1) {
-                const y = py + ((h - 2 * py) / (n - 1)) * i;
-                ys.push(y);
+                const y = py + ((h - 2 * py) / (n - 1)) * i
+                ys.push(y)
                 const line = this.snap
                     .line(x1, y, x2, y)
-                    .addClass('sheet-line');
-                this.lines.push(line);
+                    .addClass('sheet-line')
+                this.lines.push(line)
             }
 
             // Draw labels
-            const xt = x2 + px / 4;
-            this.snap.text(xt, ys[0] + 5, 'A');
-            this.snap.text(xt, ys[2] + 5, 'M');
-            this.snap.text(xt, ys[4] + 5, 'G');
+            const xt = x2 + px / 4
+            this.snap.text(xt, ys[0] + 5, 'A')
+            this.snap.text(xt, ys[2] + 5, 'M')
+            this.snap.text(xt, ys[4] + 5, 'G')
 
             // Position num and denom
-            const y1 = (ys[2] + ys[0]) / 2;
-            const ym = ys[2];
-            const y2 = (ys[3] + ys[2]) / 2;
+            const y1 = (ys[2] + ys[0]) / 2
+            const ym = ys[2]
+            const y2 = (ys[3] + ys[2]) / 2
             const tsx =
-                px / 2 - this.snap.select('#numerator').getBBox().width / 2; // time signature x
-            const offset = 12; // offset from ym
-            this.num.x = tsx;
-            this.num.y = ym - offset;
-            this.denom.x = tsx;
-            this.denom.y = ym + offset;
+                px / 2 - this.snap.select('#numerator').getBBox().width / 2 // time signature x
+            const offset = 12 // offset from ym
+            this.num.x = tsx
+            this.num.y = ym - offset
+            this.denom.x = tsx
+            this.denom.y = ym + offset
 
-            this.draw();
+            this.draw()
         },
 
         draw() {
-            this.reset();
+            this.reset()
 
-            const px = this.px;
-            const padDot = 10;
-            this.dotRadius = 8;
+            const px = this.px
+            const padDot = 10
+            this.dotRadius = 8
 
-            const xmin = this.px + padDot;
-            const xmax = this.snap.node.getBoundingClientRect().width - this.px;
+            const xmin = this.px + padDot
+            const xmax = this.snap.node.getBoundingClientRect().width - this.px
 
             this.dots.forEach((dot, idx) => {
-                const x = this.distribute(xmin, xmax, this.dots.length, idx);
-                let y;
+                const x = this.distribute(xmin, xmax, this.dots.length, idx)
+                let y
                 if (dot.sample === '') {
                     y =
                         this.snap.node.getBoundingClientRect().height -
-                        this.dotRadius * 1.5;
+                        this.dotRadius * 1.5
                 } else {
-                    const reg = this.getSoundRegister(dot.sample);
-                    let lineIdx;
-                    if (reg === 'agudos') lineIdx = 0;
-                    else if (reg === 'medios') lineIdx = 2;
-                    else if (reg === 'graves') lineIdx = 4;
-                    y = this.lines[lineIdx].attr('y1');
+                    const reg = this.getSoundRegister(dot.sample)
+                    let lineIdx
+                    if (reg === 'agudos') lineIdx = 0
+                    else if (reg === 'medios') lineIdx = 2
+                    else if (reg === 'graves') lineIdx = 4
+                    y = this.lines[lineIdx].attr('y1')
                 }
-                const d = this.snap.circle(x, y, this.dotRadius);
-                d.addClass('dot');
-                const src = dot.image.attr('xlink:href');
-                const r = this.dotRadius;
-                const coeff = 1.5;
+                const d = this.snap.circle(x, y, this.dotRadius)
+                d.addClass('dot')
+                const src = dot.image.attr('xlink:href')
+                const r = this.dotRadius
+                const coeff = 1.5
 
-                const imgx = x - (r * coeff) / 2;
-                const imgy = y - (r * coeff) / 2;
-                const imgw = r * coeff;
-                const imgh = r * coeff;
-                const img = this.snap.image(src, imgx, imgy, imgw, imgh);
-                dot.sheetElem = d;
-                if (dot.sample === '') dot.sheetElem.addClass('inactive');
-                dot.sheetImage = img;
-            });
+                const imgx = x - (r * coeff) / 2
+                const imgy = y - (r * coeff) / 2
+                const imgw = r * coeff
+                const imgh = r * coeff
+                const img = this.snap.image(src, imgx, imgy, imgw, imgh)
+                dot.sheetElem = d
+                if (dot.sample === '') dot.sheetElem.addClass('inactive')
+                dot.sheetImage = img
+            })
         },
 
         getSoundRegister(sound) {
-            const registers = Object.keys(store.getActiveBank().sounds);
-            const sounds = store.getActiveBank().sounds;
+            const registers = Object.keys(store.getActiveBank().sounds)
+            const sounds = store.getActiveBank().sounds
             for (let iregister = 0; iregister < registers.length; iregister++) {
-                const register = registers[iregister];
-                const rsounds = sounds[register];
+                const register = registers[iregister]
+                const rsounds = sounds[register]
                 for (let isound = 0; isound < rsounds.length; isound += 1) {
-                    const s = rsounds[isound];
-                    if (s.sample === sound) return register;
+                    const s = rsounds[isound]
+                    if (s.sample === sound) return register
                 }
             }
             // registers.forEach(register => {
             //     const sound = register.sounds.find(s => s.sample === sound);
             //     if (sound) return register;
             // });
-            console.log('!!!!!!!!!!! returning sound register error');
-            return 'graves';
+            console.log('!!!!!!!!!!! returning sound register error')
+            return 'graves'
         },
 
         distribute(vmin, vmax, steps, idx) {
             if (steps === 0)
-                throw Error(`steps cannot be 0 and ${steps} was used.`);
+                throw Error(`steps cannot be 0 and ${steps} was used.`)
             if (idx >= steps)
                 throw Error(
                     `idx has to be less than steps and idx was ${idx} and steps was ${steps}.`
-                );
+                )
             if (vmin > vmax)
                 throw Error(
                     `vmin has to be less than vmax and vmin was ${vmin} and vmax was ${vmax}`
-                );
-            const step = (vmax - vmin) / (steps * 2);
-            return vmin + step * idx * 2 + step;
+                )
+            const step = (vmax - vmin) / (steps * 2)
+            return vmin + step * idx * 2 + step
         }
     }
-};
+}
 </script>
 
 <style lang="scss">
