@@ -10,7 +10,7 @@
             <span v-for="(dot, idx) in dots" :key="dot">
                 <span
                     class="possibleDot"
-                    :class="{active: dot === shared.dot}"
+                    :class="{active: dot === state.dot}"
                     @click="changeDot(dot)"
                 >{{ dot }}</span>
                 <span v-if="idx !== dots.length - 1">&nbsp;/&nbsp;</span>
@@ -28,22 +28,22 @@
 </template>
 
 <script>
-import Soundbanks from './components/Soundbanks.vue';
-import Shape from './components/Shape.vue';
-import BpmChooser from './components/BpmChooser.vue';
-import Controls from './components/Controls.vue';
-import Sheet from './components/Sheet.vue';
+import Soundbanks from '@/components/Soundbanks.vue'
+import Shape from '@/components/Shape.vue'
+import BpmChooser from '@/components/BpmChooser.vue'
+import Controls from '@/components/Controls.vue'
+import Sheet from '@/components/Sheet.vue'
 
-import { throttle, debounce } from 'lodash';
-import { store } from './store';
+import { throttle, debounce } from 'lodash'
+import { store } from '@/store'
 
 export default {
     name: 'app',
     data() {
         return {
             dots: [2, 3, 4],
-            shared: store.state
-        };
+            state: store.state
+        }
     },
     components: {
         BpmChooser,
@@ -54,23 +54,23 @@ export default {
     },
     methods: {
         changeDot(dot) {
-            store.changeDot(dot);
+            store.changeDot(dot)
         },
         toggleSheet() {
-            store.toggleSheet();
+            store.toggleSheet()
         }
     },
     mounted() {
         document.addEventListener('keypress', e => {
             if (e.key == 2 || e.key == 3 || e.key == 4)
-                store.changeDot(Number.parseInt(e.key));
-        });
+                store.changeDot(Number.parseInt(e.key))
+        })
         let fn = debounce(() => {
-            this.$root.$emit('custom-resize');
-        }, 250);
-        window.addEventListener('resize', fn);
+            this.$root.$emit('custom-resize')
+        }, 250)
+        window.addEventListener('resize', fn)
     }
-};
+}
 </script>
 
 <style lang="scss">

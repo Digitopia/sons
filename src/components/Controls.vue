@@ -1,64 +1,59 @@
 <template>
-  <div id="controls">
-    <i
-      id="fullscreen"
-      class="fa fa-expand"
-      @click="fullscreen"
-    />
-    <i
-      id="play"
-      class="far"
-      :class="playing ? 'fa-stop-circle' : 'fa-play-circle'"
-      @click="play"
-    />
-    <i
-      id="record"
-      class="far fa-dot-circle"
-      :class="{recording: recording}"
-      @click="record"
-    />
-    <div class="control-text">
-      FULLSCREEN
+    <div id="controls">
+        <font-awesome-icon icon="expand"></font-awesome-icon>
+        <font-awesome-icon
+            class="play"
+            :icon="['far', state.playing ? 'stop-circle' : 'play-circle']"
+            @click="state.playing = !state.playing"
+        ></font-awesome-icon>
+        <font-awesome-icon :icon="['far', 'dot-circle']"></font-awesome-icon>
+        <div class="control-text">FULLSCREEN</div>
+        <div class="control-text">{{ state.playing ? "STOP" : "PLAY" }}</div>
+        <div class="control-text">REC</div>
     </div>
-    <div class="control-text">
-      {{ playing ? "STOP" : "PLAY" }}
-    </div>
-    <div class="control-text">
-      REC
-    </div>
-  </div>
 </template>
 
 <script>
+import Vue from 'vue'
 
 import screenfull from 'screenfull'
 import Tone from 'tone'
 import FileSaver from 'file-saver'
+import { store } from '@/store'
+
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faExpand } from '@fortawesome/free-solid-svg-icons'
+import { faPlayCircle, faStopCircle, faDotCircle } from '@fortawesome/free-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+library.add(faExpand, faPlayCircle, faStopCircle, faDotCircle)
+Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 export default {
     name: 'Controls',
     data() {
         return {
+            state: store.state,
             playing: false,
             recording: false
         }
     },
     mounted() {
-        this.$root.$on('stop', () => {
-            this.playing = false
-        })
         this.recorder = new Recorder(Tone.Master.input)
+    },
+    watch: {
+        'state.playing': function () {
+            if (this.state.playing) this.play()
+            else this.stop()
+        }
     },
     methods: {
         play() {
             if (Tone.context.state === 'suspended') Tone.context.resume()
-            this.playing = !this.playing
-            if (this.playing) {
-                Tone.Transport.position = '0:0:0'
-                Tone.Transport.start()
-            } else {
-                Tone.Transport.stop()
-            }
+            Tone.Transport.position = '0:0:0'
+            Tone.Transport.start()
+        },
+        stop() {
+            Tone.Transport.stop()
         },
         record() {
             this.recording = !this.recording
@@ -86,7 +81,7 @@ export default {
     grid-template-columns: repeat(3, 1fr);
     justify-items: center;
     align-items: center;
-    i {
+    svg {
         font-size: 2em;
         &:hover {
             cursor: pointer;
@@ -96,7 +91,7 @@ export default {
         }
     }
 }
-#play {
+svg.play {
     font-size: 3.5em !important;
 }
 .control-text {
