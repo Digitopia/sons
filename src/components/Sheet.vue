@@ -103,7 +103,7 @@ export default {
             const x2 = w - px;
 
             // Draw lines
-            const n = 3;
+            const n = 5;
             const ys = [];
             for (let i = 0; i < n; i += 1) {
                 const y = py + ((h - 2 * py) / (n - 1)) * i;
@@ -117,13 +117,13 @@ export default {
             // Draw labels
             const xt = x2 + px / 4;
             this.snap.text(xt, ys[0] + 5, 'A');
-            this.snap.text(xt, ys[1] + 5, 'M');
-            this.snap.text(xt, ys[2] + 5, 'G');
+            this.snap.text(xt, ys[2] + 5, 'M');
+            this.snap.text(xt, ys[4] + 5, 'G');
 
             // Position num and denom
-            const y1 = (ys[1] + ys[0]) / 2;
-            const ym = ys[1];
-            const y2 = (ys[2] + ys[1]) / 2;
+            const y1 = (ys[2] + ys[0]) / 2;
+            const ym = ys[2];
+            const y2 = (ys[3] + ys[2]) / 2;
             const tsx =
                 px / 2 - this.snap.select('#numerator').getBBox().width / 2; // time signature x
             const offset = 12; // offset from ym
@@ -140,7 +140,7 @@ export default {
 
             const px = this.px;
             const padDot = 10;
-            this.dotRadius = 12;
+            this.dotRadius = 8;
 
             const xmin = this.px + padDot;
             const xmax = this.snap.node.getBoundingClientRect().width - this.px;
@@ -156,8 +156,8 @@ export default {
                     const reg = this.getSoundRegister(dot.sample);
                     let lineIdx;
                     if (reg === 'agudos') lineIdx = 0;
-                    else if (reg === 'medios') lineIdx = 1;
-                    else if (reg === 'graves') lineIdx = 2;
+                    else if (reg === 'medios') lineIdx = 2;
+                    else if (reg === 'graves') lineIdx = 4;
                     y = this.lines[lineIdx].attr('y1');
                 }
                 const d = this.snap.circle(x, y, this.dotRadius);
@@ -243,7 +243,7 @@ export default {
 }
 .sheet-line {
     stroke: black;
-    stroke-width: 2px;
+    stroke-width: 1px;
 }
 .time-signature {
     font-family: "bravuraregular";

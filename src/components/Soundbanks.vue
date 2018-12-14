@@ -84,6 +84,7 @@ export default {
                 new Tone.Players(mappings).toMaster(),
                 bankId
             );
+            console.log(`Loaded bank ${bankId}`)
         },
         change(dir) {
             let idx = this.getBankIdx(this.shared.bankId);

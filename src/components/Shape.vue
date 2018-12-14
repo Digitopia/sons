@@ -81,7 +81,6 @@ export default {
         resize() {
             const isMobile = 'ontouchstart' in document.documentElement;
             if (isMobile) return;
-            console.log('resizing!');
             this.draw();
         },
         resetSequence() {

@@ -9,14 +9,17 @@
         ></i>
         <i id="record" class="far fa-dot-circle" :class="{recording: recording}" @click="record"></i>
         <div class="control-text">FULLSCREEN</div>
-        <div class="control-text">PLAY</div>
+        <div class="control-text">{{ playing ? "STOP" : "PLAY"}}</div>
         <div class="control-text">REC</div>
     </div>
 </template>
 
 <script>
+
 import screenfull from 'screenfull';
 import Tone from 'tone';
+import FileSaver from 'file-saver';
+
 export default {
     name: 'Controls',
     data() {
@@ -29,6 +32,7 @@ export default {
         this.$root.$on('stop', () => {
             this.playing = false;
         });
+        this.recorder = new Recorder(Tone.Master.input)
     },
     methods: {
         play() {
@@ -43,6 +47,14 @@ export default {
         },
         record() {
             this.recording = !this.recording;
+            if (this.recording) {
+                this.recorder.record()
+            } else {
+                this.recorder.stop()
+                this.recorder.exportWAV(blob => {
+                    FileSaver.saveAs(blob, 'Gravação Caça Sons.wav')
+                })
+            }
         },
         fullscreen() {
             console.log('fullscreen');
