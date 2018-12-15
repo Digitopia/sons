@@ -22,20 +22,19 @@ export default {
             state: store.state,
             segments: [],
             r: 25,
-            group: null,
             snap: null,
-            sequence: undefined,
+            sequence: null,
             dots: [],
         }
     },
     watch: {
-        'state.dot': function () {
-            console.log('TODO: alter shape and remove/add dots')
-        }
+
     },
     mounted() {
         this.init()
-        this.$root.$on('dotchange', this.dotChange)
+        this.$root.$on('dotchange', this.dotChanged)
+        this.$root.$on('dotschange', this.dotsChanged)
+        this.$root.$on('dotstep', this.dotStepped)
     },
     methods: {
 
@@ -70,11 +69,20 @@ export default {
             })
         },
 
-        dotChange(dot) {
+        dotChanged(dot) {
             console.log('dotchange', dot)
             this.dots[dot.idx].image.attr({ 'xlink:href': dot.src })
             this.dots[dot.idx].sample = dot.sample
             this.sequence.at(dot.idx, { bank: dot.bank, sample: dot.sample })
+        },
+
+        dotsChanged(diff) {
+            if (diff < 0) {
+                for (let i = 0; i < Math.abs(diff); i++) {
+                    this.dots[this.dots.length-1].remove()
+                    this.dots.pop()
+                }
+            }
         },
 
         resize() {
@@ -82,19 +90,22 @@ export default {
         },
 
         reset() {
-            // TODO
+            // TODO:
         },
 
         step(time, note) {
+            let idx = this.sequence.progress * this.state.dot
+            idx = Math.round(idx) // TODO: this is a dangerous fix!
+            // console.log('idx', idx, this.sequence.progress.toFixed(2))
+            console.log('step', idx, note.bank, note.sample)
+            this.$root.$emit('dotstep', { idx, note, time })
+        },
+
+        dotStepped({idx, note, time}) {
 
             this.dots.forEach(dot => dot.removeClass('active'))
 
-            let idx = this.sequence.progress * this.state.dot
-            idx = Math.round(idx) // HACK: this is a dangerous fix!
-            // console.log('idx', idx, this.sequence.progress.toFixed(2))
-            console.log('step', idx, note)
-
-            // animate shape dot
+            // animate
             if (!this.dots[idx]) return
             this.dots[idx].animate(
                 { r: this.r * 1.5 },
@@ -105,25 +116,9 @@ export default {
                 }
             )
 
-            // animate sheet dot
-            // const sheetRadius = 12
-            // if (!this.dots[idx].sheetElem) return
-            // this.dots[idx].sheetElem.animate(
-            //     { r: sheetRadius * 1.5, strokeWidth: 3 },
-            //     80,
-            //     window.mina.easinout,
-            //     () => {
-            //         this.dots[idx].sheetElem.animate(
-            //             { r: sheetRadius, stroke: 'none' },
-            //             80
-            //         )
-            //     }
-            // )
-
-            if (note === '') return
-            console.log(note.bank)
-            console.log(this.state.players)
+            if (note.bank === undefined) return
             this.state.players[note.bank].get(note.sample).start(time)
+
         },
 
         draw() {

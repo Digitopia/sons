@@ -64,6 +64,8 @@ export default {
     mounted() {
         this.init()
         this.$root.$on('dotchange', this.dotChanged)
+        this.$root.$on('dotschange', this.dotsChanged)
+        this.$root.$on('dotstep', this.dotStepped)
     },
 
     methods: {
@@ -159,6 +161,24 @@ export default {
             dot.circle.attr('cy', y)
             dot.image.attr('y', y - (this.dotCoef * this.dotRadius)/2)
 
+        },
+
+        dotsChanged(diff) {
+            console.log('TODO: need to redo sheet here', diff)
+        },
+
+        dotStepped({idx, note, time}) {
+            this.dots[idx].circle.animate(
+                { r: this.dotRadius * 1.5, strokeWidth: 3 },
+                80,
+                window.mina.easinout,
+                () => {
+                    this.dots[idx].circle.animate(
+                        { r: this.dotRadius, stroke: 'none' },
+                        80
+                    )
+                }
+            )
         },
 
         resize() {
