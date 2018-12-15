@@ -29,7 +29,7 @@ export default {
     },
     data() {
         return {
-            options: [30, 44, 52, 60, 80, 100, 120],
+            options: [44, 52, 60, 80, 100, 120, 140],
             bpm: this.default,
             orientation: 'vertical'
         }

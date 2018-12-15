@@ -4,30 +4,25 @@
             <tr>
                 <th colspan="100%" class="bank-title">
                     <span class="left" @click="change(-1)">←</span>
-                    {{ bank.name }}
+                    {{ state.bank.name }}
                     <span class="right" @click="change(1)">→</span>
                 </th>
             </tr>
-            <tr v-for="register in Object.keys(bank.sounds)" :key="register">
-                <th v-if="register === 'agudos'">Agudos
-                    <br>(A)
+            <tr v-for="register in registers" :key="register">
+                <th>
+                    {{ register | wordize }}<br>
+                    ({{register | firstLetter}})
                 </th>
-                <th v-else-if="register === 'medios'">Médios
-                    <br>(M)
-                </th>
-                <th v-else-if="register === 'graves'">Graves
-                    <br>(G)
-                </th>
-                <td v-for="(sound, idx) in bank.sounds[register]" :key="idx">
+                <td v-for="(sound, idx) in getSounds(register, state.bank.id)" :key="idx">
                     <img v-if="sound.icon.includes('holder')" v-holder="sound.icon">
                     <img
                         v-else
                         :src="require(`@/${sound.icon}`)"
+                        :alt="`image for ${sound.icon}`"
+                        :class="{active: activeSound === sound}"
+                        :data-sample="sound.sample"
                         @dragstart="drag"
                         @touchstart="touchstart(sound)"
-                        :data-sample="sound.sample"
-                        :class="{active: activeSound === sound}"
-                        :alt="`image for ${sound.icon}`"
                     >
                 </td>
             </tr>
@@ -36,83 +31,78 @@
 </template>
 
 <script>
-import { store } from '../store'
-import Tone from 'tone'
-import flat from 'array.prototype.flat'
 
-// make v-holder work (since CDN didn't do the trick)
-import VueHolder from 'vue-holderjs'
 import Vue from 'vue'
+
+import { store } from '@/store'
+
+import Tone from 'tone'
+import VueHolder from 'vue-holderjs'
 Vue.use(VueHolder)
 
 export default {
+
     name: 'Soundbanks',
+
     data() {
         return {
-            shared: store.state,
-            activeSound: undefined
+            state: store.state,
+            registers: ['agudos', 'medios', 'graves'],
+            activeSound: null,
         }
     },
-    computed: {
-        bank() {
-            return this.shared.banks.find(
-                bank => bank.id === this.shared.bankId
-            )
+
+    filters: {
+        wordize: function(register) {
+            if (register === 'agudos') return 'Agudos'
+            if (register === 'medios') return 'Médios'
+            if (register === 'graves') return 'Graves'
+        },
+        firstLetter: function(str) {
+            return str.charAt(0).toUpperCase()
         }
     },
+
     mounted() {
-        this.loadBank(this.shared.bankId)
+        this.loadBank(this.state.bank.id)
     },
+
     methods: {
-        loadBank(bankId) {
-            console.log(`Trying to load bank ${bankId}`)
-            if (this.shared.players[bankId]) {
-                console.log(`Soundbank ${bankId} is already loaded`)
+
+        getSounds(register, bankId) {
+            const bank = this.state.banks.find(bank => bank.id === bankId)
+            return bank.sounds.filter(sound => sound.register === register)
+        },
+
+        loadBank(id) {
+            console.log(`Trying to load bank ${id}`)
+            if (this.state.players[id]) {
+                console.log(`Soundbank ${id} is already loaded`)
                 return
             }
-            const conf = this.shared.banks.find(bank => bank.id === bankId)
-            const path = `sounds/${bankId}`
-            const sounds = Object.values(conf.sounds)
-            const flatten = flat(sounds)
-            const urls = flatten.map(sound => `${path}/${sound.sample}`)
-            let mappings = {}
-            urls.forEach(url => {
-                const key = url.split('/').slice(-1)
-                if (url !== '') mappings[key] = url
-            })
-            store.addPlayersToBank(
-                new Tone.Players(mappings).toMaster(),
-                bankId
-            )
-            console.log(`Loaded bank ${bankId}`)
+            const bank = this.state.banks.find(bank => bank.id === id)
+            const { sounds } = bank
+            const path = `sounds/${id}`
+            const paths = sounds.map(sound => `${path}/${sound.sample}`)
+            const mappings = {}
+            paths.forEach((path, idx) => mappings[sounds[idx].sample] = path)
+            this.state.players[id] = new Tone.Players(mappings).toMaster(),
+            console.log(`Loaded bank ${id}`)
         },
+
         change(dir) {
-            let idx = this.getBankIdx(this.shared.bankId)
-            idx += dir
-            if (idx > this.shared.banks.length - 1) {
-                idx = this.shared.banks.length - 1
-                return
-            } else if (idx < 0) {
-                idx = 0
-                return
-            }
-            const bankId = this.shared.banks[idx].id
-            store.changeBankId(bankId)
-            this.loadBank(bankId)
-            this.$root.$emit('soundbank-change', bankId)
+            const idx = this.state.banks.findIndex(bank => bank.id === this.state.bank.id)
+            if (idx + dir >= this.state.banks.length || idx + dir < 0) return
+            const bank = this.state.banks[idx+dir]
+            this.state.bank = bank
+            this.loadBank(bank.id)
         },
-        getBankIdx(bankId) {
-            const ids = this.shared.banks.map(bank => bank.id)
-            const idx = ids.findIndex(id => id === bankId)
-            return idx
-        },
+
         drag(evt) {
-            evt.dataTransfer.setData(
-                'sample',
-                evt.target.getAttribute('data-sample')
-            )
+            evt.dataTransfer.setData( 'sample', evt.target.getAttribute('data-sample') )
             evt.dataTransfer.setData('src', evt.target.src)
         },
+
         touchstart(sound) {
             this.activeSound = sound !== this.activeSound ? sound : undefined
         }

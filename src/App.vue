@@ -4,14 +4,14 @@
 
         <Soundbanks class="no-select"/>
         <Shape/>
-        <BpmChooser :default="60"/>
+        <BpmChooser :default="80"/>
 
         <div id="dotsChooser" class="no-select">
             <span v-for="(dot, idx) in dots" :key="dot">
                 <span
                     class="possibleDot"
                     :class="{active: dot === state.dot}"
-                    @click="changeDot(dot)"
+                    @click="state.dot = dot"
                 >{{ dot }}</span>
                 <span v-if="idx !== dots.length - 1">&nbsp;/&nbsp;</span>
             </span>
@@ -38,13 +38,16 @@ import { throttle, debounce } from 'lodash'
 import { store } from '@/store'
 
 export default {
+
     name: 'app',
+
     data() {
         return {
             dots: [2, 3, 4],
             state: store.state
         }
     },
+
     components: {
         BpmChooser,
         Controls,
@@ -60,21 +63,25 @@ export default {
             store.toggleSheet()
         }
     },
+    created() {
+        this.state.bank = store.getBank(this.state.activeBankId)
+    },
     mounted() {
         document.addEventListener('keypress', e => {
-            if (e.key == 2 || e.key == 3 || e.key == 4)
-                store.changeDot(Number.parseInt(e.key))
+            if (e.key == 2 || e.key == 3 || e.key == 4) {
+                this.state.dot = Number.parseInt(e.key)
+                // store.changeDot(Number.parseInt(e.key))
+            }
         })
-        let fn = debounce(() => {
+        window.addEventListener('resize', debounce(() => {
             this.$root.$emit('custom-resize')
-        }, 250)
-        window.addEventListener('resize', fn)
+        }, 250))
     }
 }
 </script>
 
 <style lang="scss">
-@import "globals";
+@import "styles/globals";
 
 @import url("https://fonts.googleapis.com/css?family=Lato");
 
@@ -140,5 +147,5 @@ body {
 }
 
 // @TODO: this should be able to be at the top for better clarity
-@import "breakpoints";
+@import "styles/breakpoints";
 </style>

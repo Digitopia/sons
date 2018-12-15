@@ -1,6 +1,6 @@
 <template>
     <div id="controls">
-        <font-awesome-icon icon="expand"></font-awesome-icon>
+        <font-awesome-icon icon="expand" @click="fullscreen"></font-awesome-icon>
         <font-awesome-icon
             class="play"
             :icon="['far', state.playing ? 'stop-circle' : 'play-circle']"
@@ -33,7 +33,6 @@ export default {
     data() {
         return {
             state: store.state,
-            playing: false,
             recording: false
         }
     },
@@ -41,7 +40,7 @@ export default {
         this.recorder = new Recorder(Tone.Master.input)
     },
     watch: {
-        'state.playing': function () {
+        'state.playing': function() {
             if (this.state.playing) this.play()
             else this.stop()
         }
