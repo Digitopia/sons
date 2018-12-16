@@ -55,6 +55,21 @@ export default {
         Sheet,
         Soundbanks
     },
+
+    watch: {
+        'state.dot': function() {
+            const diff = this.state.dot - this.state.dots.length
+            if (diff > 0) { // adding dots
+                for (let i = 0; i < diff; i++) this.state.dots.push({
+                    bank: '', sample: ''
+                })
+            } else { // removing dots
+                for (let i = 0; i < Math.abs(diff); i++) this.state.dots.pop()
+            }
+            this.$root.$emit('dotschange', diff)
+        }
+    },
+
     methods: {
         changeDot(dot) {
             store.changeDot(dot)
@@ -63,9 +78,15 @@ export default {
             store.toggleSheet()
         }
     },
+
     created() {
-        this.state.bank = store.getBank(this.state.activeBankId)
+        for (let i = 0; i < this.state.dot; i++) {
+            this.state.dots.push({
+                bank: '', sample: ''
+            })
+        }
     },
+
     mounted() {
         document.addEventListener('keypress', e => {
             if (e.key == 2 || e.key == 3 || e.key == 4) {

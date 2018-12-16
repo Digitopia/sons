@@ -66,6 +66,9 @@ export default {
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotschange', this.dotsChanged)
         this.$root.$on('dotstep', this.dotStepped)
+
+        // listener to fake stuff
+        this.$on('dotchange', this.dotChanged)
     },
 
     methods: {
@@ -144,6 +147,8 @@ export default {
 
         dotChanged(evt) {
 
+            console.log('sheet dotchange', evt)
+
             const dot = this.dots[evt.idx]
 
             dot.circle.removeClass('inactive')
@@ -152,7 +157,8 @@ export default {
             dot.image.attr('xlink:href', evt.src)
 
             // update height position
-            const register = this.state.bank.sounds.find(sound => sound.sample === evt.sample).register
+            const bank = this.state.banks.find(bank => bank.id === evt.bank)
+            const register = bank.sounds.find(sound => sound.sample === evt.sample).register
             let lineIdx
             if (register === 'agudos') lineIdx = 0
             if (register === 'medios') lineIdx = 2
@@ -164,7 +170,17 @@ export default {
         },
 
         dotsChanged(diff) {
-            console.log('TODO: need to redo sheet here', diff)
+            console.log('sheet dotschanged')
+            for (let i = 0; i < Math.abs(diff); i++) {
+                const srcs = this.dots.map(dot => dot.image.attr('xlink:href'))
+                this.reset()
+                this.initDots()
+                this.state.dots.forEach((dot, idx) => {
+                    const src = srcs[idx]
+                    if (dot.sample == '' || dot.bank == '') return
+                    this.$emit('dotchange', { idx, ...this.state.dots[idx], src })
+                })
+            }
         },
 
         dotStepped({idx, note, time}) {
@@ -179,6 +195,18 @@ export default {
                     )
                 }
             )
+        },
+
+        /**
+         * This is a temporary function until animation between dotsChanged is implemented.
+         * For now just throw everything away and rebuild from state
+         */
+        reset() {
+            this.dots.forEach(dot => {
+                dot.image.remove()
+                dot.circle.remove()
+            })
+            this.dots = []
         },
 
         resize() {

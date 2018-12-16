@@ -23,7 +23,6 @@ export default {
             segments: [],
             r: 25,
             snap: null,
-            sequence: null,
             dots: [],
         }
     },
@@ -35,6 +34,10 @@ export default {
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotschange', this.dotsChanged)
         this.$root.$on('dotstep', this.dotStepped)
+
+        // listener to fake stuff
+        this.$on('dotchange', this.dotChanged)
+
     },
     methods: {
 
@@ -42,11 +45,12 @@ export default {
 
             this.snap = Snap('#svg')
 
-            this.sequence = new Tone.Sequence(
-                this.step,
-                new Array(this.state.dot).fill(''),
-                '4n'
-            ).start(0)
+            this.loop = new Tone.Loop(time => {
+                const idx = this.state.dotActive
+                const note = this.state.dots[idx]
+                this.$root.$emit('dotstep', { idx, note, time })
+                this.state.dotActive = (this.state.dotActive + 1) % this.state.dot
+            }, '4n').start(0)
 
             this.draw()
 
@@ -70,18 +74,21 @@ export default {
         },
 
         dotChanged(dot) {
-            console.log('dotchange', dot)
+            console.log('shape dotchange', dot)
             this.dots[dot.idx].image.attr({ 'xlink:href': dot.src })
             this.dots[dot.idx].sample = dot.sample
-            this.sequence.at(dot.idx, { bank: dot.bank, sample: dot.sample })
         },
 
         dotsChanged(diff) {
-            if (diff < 0) {
-                for (let i = 0; i < Math.abs(diff); i++) {
-                    this.dots[this.dots.length-1].remove()
-                    this.dots.pop()
-                }
+            for (let i = 0; i < Math.abs(diff); i++) {
+                const srcs = this.dots.map(dot => dot.image.attr('xlink:href'))
+                this.reset()
+                this.draw()
+                this.state.dots.forEach((dot, idx) => {
+                    const src = srcs[idx]
+                    if (dot.sample == '' || dot.bank == '') return
+                    this.$emit('dotchange', { idx, ...this.state.dots[idx], src })
+                })
             }
         },
 
@@ -89,16 +96,22 @@ export default {
             this.draw()
         },
 
+        /**
+         * This is a temporary function until animation between dotsChanged is implemented.
+         * For now just throw everything away and rebuild from state
+         */
         reset() {
-            // TODO:
-        },
 
-        step(time, note) {
-            let idx = this.sequence.progress * this.state.dot
-            idx = Math.round(idx) // TODO: this is a dangerous fix!
-            // console.log('idx', idx, this.sequence.progress.toFixed(2))
-            console.log('step', idx, note.bank, note.sample)
-            this.$root.$emit('dotstep', { idx, note, time })
+            this.dots.forEach(dot => {
+                if (dot.image) dot.image.remove()
+                dot.remove()
+            })
+            this.dots = []
+
+            this.segments.forEach(segment => {
+                segment.remove()
+            })
+
         },
 
         dotStepped({idx, note, time}) {
@@ -116,7 +129,7 @@ export default {
                 }
             )
 
-            if (note.bank === undefined) return
+            if (note.bank === '' || note.sample == '') return
             this.state.players[note.bank].get(note.sample).start(time)
 
         },
@@ -184,7 +197,7 @@ export default {
                 dot.image.node.addEventListener('dragover', this.dragover)
                 dot.image.node.addEventListener('drop', this.drop)
                 dot.image.node.addEventListener('touchstart', () => {
-                    this.$root.$emit('chosen-dot', idx)
+                    // TODO: do something...
                 })
                 dot.image.appendTo(this.snap)
             })
