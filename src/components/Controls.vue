@@ -22,14 +22,14 @@ import FileSaver from 'file-saver'
 import { store } from '@/store'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faExpand } from '@fortawesome/free-solid-svg-icons'
+import { faExpand, faPlus } from '@fortawesome/free-solid-svg-icons'
 import {
     faPlayCircle,
     faStopCircle,
     faDotCircle,
 } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-library.add(faExpand, faPlayCircle, faStopCircle, faDotCircle)
+library.add(faExpand, faPlayCircle, faStopCircle, faDotCircle, faPlus)
 Vue.component('FontAwesomeIcon', FontAwesomeIcon)
 
 export default {

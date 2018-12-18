@@ -1,5 +1,5 @@
 <template>
-    <div id="sheetContainer" :class="{ hide: !state.showSheet }">
+    <div id="sheetContainer">
         <svg id="sheet" charset="utf-8">
             <text
                 id="numerator"
@@ -35,6 +35,7 @@ export default {
 
     data() {
         return {
+            state: store.state,
             segments: [],
             r: 25,
             lines: [],
@@ -50,7 +51,6 @@ export default {
                 y: null,
             },
             dots: [],
-            state: store.state,
         }
     },
 

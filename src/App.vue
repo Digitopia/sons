@@ -1,31 +1,46 @@
 <template>
-    <div v-cloak id="app" class="no-select">
-        <h2 class="header">Caça Sons</h2>
+    <Transition appear appear-active-class="animated fadeIn fast">
+        <div v-cloak id="app" class="no-select">
+            <h2 class="header">Caça Sons</h2>
 
-        <Soundbanks class="no-select" />
-        <Shape />
-        <BpmChooser :default="80" />
+            <Soundbanks class="no-select" />
+            <Shape />
+            <BpmChooser :default="80" />
 
-        <div id="dotsChooser" class="no-select">
-            <span v-for="(dot, idx) in dots" :key="dot">
-                <span
-                    class="possibleDot"
-                    :class="{ active: dot === state.dot }"
-                    @click="state.dot = dot"
-                    >{{ dot }}</span
-                >
-                <span v-if="idx !== dots.length - 1">&nbsp;/&nbsp;</span>
-            </span>
+            <div id="dotsChooser" class="no-select">
+                <span v-for="(dot, idx) in dots" :key="dot">
+                    <span
+                        class="possibleDot"
+                        :class="{ active: dot === state.dot }"
+                        @click="state.dot = dot"
+                        >{{ dot }}</span
+                    >
+                    <span v-if="idx !== dots.length - 1">&nbsp;/&nbsp;</span>
+                </span>
+            </div>
+
+            <Controls class="no-select" />
+
+            <div
+                id="open"
+                class="control"
+                @click="state.showSheet = !state.showSheet"
+            >
+                <FontAwesomeIcon :icon="'plus'"></FontAwesomeIcon>
+            </div>
+
+            <Transition
+                enter-active-class="animated bounceInDown"
+                leave-active-class="animated bounceOutUp"
+            >
+                <Sheet
+                    v-show="state.showSheet"
+                    :numerator="3"
+                    class="no-select"
+                />
+            </Transition>
         </div>
-
-        <Controls class="no-select" />
-
-        <div id="open" class="control cursor-hover">
-            <i class="fa fa-plus" @click="toggleSheet"></i>
-        </div>
-
-        <Sheet :numerator="3" class="no-select" />
-    </div>
+    </Transition>
 </template>
 
 <script>
@@ -96,15 +111,6 @@ export default {
                 this.$root.$emit('custom-resize')
             }, 250)
         )
-    },
-
-    methods: {
-        changeDot(dot) {
-            store.changeDot(dot)
-        },
-        toggleSheet() {
-            store.toggleSheet()
-        },
     },
 }
 </script>
@@ -177,4 +183,5 @@ body {
 
 // @TODO: this should be able to be at the top for better clarity
 @import 'styles/breakpoints';
+@import '~animate.css';
 </style>
