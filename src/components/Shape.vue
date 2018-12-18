@@ -1,16 +1,9 @@
 <template>
-    <div id="shape">
-        <svg
-            id="svg"
-            width="100%"
-            height="100%"
-        />
-    </div>
+    <div id="shape"><svg id="svg" width="100%" height="100%" /></div>
 </template>
 
 <script>
 import Snap from 'snapsvg'
-import app from '../App.vue'
 import { store } from '../store'
 import Tone from 'tone'
 import Shake from 'shake.js'
@@ -26,9 +19,7 @@ export default {
             dots: [],
         }
     },
-    watch: {
-
-    },
+    watch: {},
     mounted() {
         this.init()
         this.$root.$on('dotchange', this.dotChanged)
@@ -37,19 +28,17 @@ export default {
 
         // listener to fake stuff
         this.$on('dotchange', this.dotChanged)
-
     },
     methods: {
-
         init() {
-
             this.snap = Snap('#svg')
 
             this.loop = new Tone.Loop(time => {
                 const idx = this.state.dotActive
                 const note = this.state.dots[idx]
                 this.$root.$emit('dotstep', { idx, note, time })
-                this.state.dotActive = (this.state.dotActive + 1) % this.state.dot
+                this.state.dotActive =
+                    (this.state.dotActive + 1) % this.state.dot
             }, '4n').start(0)
 
             this.draw()
@@ -57,15 +46,18 @@ export default {
             this.$root.$on('custom-resize', this.resize)
 
             this.initShake()
-
         },
 
         initShake() {
             new Shake({ threshold: 10, timeout: 1000 }).start()
 
-            window.addEventListener('shake', () => {
-                this.$root.$emit('shaked')
-            }, false)
+            window.addEventListener(
+                'shake',
+                () => {
+                    this.$root.$emit('shaked')
+                },
+                false
+            )
 
             this.$root.$on('shaked', () => {
                 this.reset()
@@ -87,7 +79,11 @@ export default {
                 this.state.dots.forEach((dot, idx) => {
                     const src = srcs[idx]
                     if (dot.sample == '' || dot.bank == '') return
-                    this.$emit('dotchange', { idx, ...this.state.dots[idx], src })
+                    this.$emit('dotchange', {
+                        idx,
+                        ...this.state.dots[idx],
+                        src,
+                    })
                 })
             }
         },
@@ -101,7 +97,6 @@ export default {
          * For now just throw everything away and rebuild from state
          */
         reset() {
-
             this.dots.forEach(dot => {
                 if (dot.image) dot.image.remove()
                 dot.remove()
@@ -111,11 +106,9 @@ export default {
             this.segments.forEach(segment => {
                 segment.remove()
             })
-
         },
 
-        dotStepped({idx, note, time}) {
-
+        dotStepped({ idx, note, time }) {
             this.dots.forEach(dot => dot.removeClass('active'))
 
             // animate
@@ -131,15 +124,17 @@ export default {
 
             if (note.bank === '' || note.sample == '') return
             this.state.players[note.bank].get(note.sample).start(time)
-
         },
 
         draw() {
-
             this.snap.clear()
 
-            const w = this.snap.node.clientWidth || this.snap.node.getBoundingClientRect().width
-            const h = this.snap.node.clientHeight || this.snap.node.getBoundingClientRect().height
+            const w =
+                this.snap.node.clientWidth ||
+                this.snap.node.getBoundingClientRect().width
+            const h =
+                this.snap.node.clientHeight ||
+                this.snap.node.getBoundingClientRect().height
 
             const { r } = this
             const padding = r * 0.5
@@ -205,7 +200,7 @@ export default {
             this.segments.forEach(segment =>
                 segment.attr({
                     stroke: 'black',
-                    strokeWidth: '12px'
+                    strokeWidth: '12px',
                 })
             )
         },
@@ -224,8 +219,8 @@ export default {
             }
             this.state.dots[idx] = dot
             this.$root.$emit('dotchange', { idx, ...dot, src })
-        }
-    }
+        },
+    },
 }
 </script>
 

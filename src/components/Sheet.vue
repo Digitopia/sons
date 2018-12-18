@@ -1,8 +1,21 @@
 <template>
-    <div id="sheetContainer" :class="{hide: !state.showSheet}">
+    <div id="sheetContainer" :class="{ hide: !state.showSheet }">
         <svg id="sheet" charset="utf-8">
-            <text id="numerator" class="time-signature" :x="num.x" :y="num.y" v-html="numChar"></text>
-            <text id="denominator" class="time-signature" :x="denom.x" :y="denom.y">&#57476;</text>
+            <text
+                id="numerator"
+                class="time-signature"
+                :x="num.x"
+                :y="num.y"
+                v-html="numChar"
+            ></text>
+            <text
+                id="denominator"
+                class="time-signature"
+                :x="denom.x"
+                :y="denom.y"
+            >
+                &#57476;
+            </text>
         </svg>
     </div>
 </template>
@@ -16,8 +29,8 @@ export default {
     props: {
         numerator: {
             type: Number,
-            default: 2
-        }
+            default: 2,
+        },
     },
 
     data() {
@@ -30,35 +43,35 @@ export default {
             num: {
                 x: null,
                 y: null,
-                val: this.numerator
+                val: this.numerator,
             },
             denom: {
                 x: null,
-                y: null
+                y: null,
             },
             dots: [],
-            state: store.state
+            state: store.state,
         }
     },
 
     computed: {
-        numChar: function () {
+        numChar: function() {
             switch (this.num.val) {
-            case 2:
-                return '&#57474;'
-            case 3:
-                return '&#57475;'
-            case 4:
-            default:
-                return '&#57476;'
+                case 2:
+                    return '&#57474;'
+                case 3:
+                    return '&#57475;'
+                case 4:
+                default:
+                    return '&#57476;'
             }
-        }
+        },
     },
 
     watch: {
-        'state.dot': function () {
+        'state.dot': function() {
             this.num.val = this.dot
-        }
+        },
     },
 
     mounted() {
@@ -72,13 +85,15 @@ export default {
     },
 
     methods: {
-
         init() {
-
             this.snap = Snap('#sheet')
 
-            const w = this.snap.node.clientWidth || this.snap.node.getBoundingClientRect().width
-            const h = this.snap.node.clientHeight || this.snap.node.getBoundingClientRect().height
+            const w =
+                this.snap.node.clientWidth ||
+                this.snap.node.getBoundingClientRect().width
+            const h =
+                this.snap.node.clientHeight ||
+                this.snap.node.getBoundingClientRect().height
             const px = this.px
             const py = this.py
             const x1 = px
@@ -90,9 +105,7 @@ export default {
             for (let i = 0; i < n; i += 1) {
                 const y = py + ((h - 2 * py) / (n - 1)) * i
                 ys.push(y)
-                const line = this.snap
-                    .line(x1, y, x2, y)
-                    .addClass('sheet-line')
+                const line = this.snap.line(x1, y, x2, y).addClass('sheet-line')
                 this.lines.push(line)
             }
 
@@ -103,10 +116,9 @@ export default {
             this.snap.text(xt, ys[4] + 5, 'G')
 
             // Position num and denom
-            const y1 = (ys[2] + ys[0]) / 2
             const ym = ys[2]
-            const y2 = (ys[3] + ys[2]) / 2
-            const tsx = px / 2 - this.snap.select('#numerator').getBBox().width / 2 // time signature x
+            const tsx =
+                px / 2 - this.snap.select('#numerator').getBBox().width / 2 // time signature x
             const offset = 12 // offset from ym
             this.num.x = tsx
             this.num.y = ym - offset
@@ -114,12 +126,9 @@ export default {
             this.denom.y = ym + offset
 
             this.initDots()
-
         },
 
         initDots() {
-
-            const px = this.px
             const padDot = 10
             this.dotRadius = 10
             this.dotCoef = 1.5
@@ -128,11 +137,14 @@ export default {
             const xmax = this.snap.node.getBoundingClientRect().width - this.px
 
             for (let idx = 0; idx < this.state.dot; idx++) {
-
                 // circle
                 const x = this.distribute(xmin, xmax, this.state.dot, idx)
-                const y = this.snap.node.getBoundingClientRect().height - this.dotRadius * 1.5
-                const circle = this.snap.circle(x, y, this.dotRadius).attr('class', 'dot inactive')
+                const y =
+                    this.snap.node.getBoundingClientRect().height -
+                    this.dotRadius * 1.5
+                const circle = this.snap
+                    .circle(x, y, this.dotRadius)
+                    .attr('class', 'dot inactive')
 
                 // empty image
                 const r = this.dotRadius
@@ -146,7 +158,6 @@ export default {
         },
 
         dotChanged(evt) {
-
             console.log('sheet dotchange', evt)
 
             const dot = this.dots[evt.idx]
@@ -158,15 +169,16 @@ export default {
 
             // update height position
             const bank = this.state.banks.find(bank => bank.id === evt.bank)
-            const register = bank.sounds.find(sound => sound.sample === evt.sample).register
+            const register = bank.sounds.find(
+                sound => sound.sample === evt.sample
+            ).register
             let lineIdx
             if (register === 'agudos') lineIdx = 0
             if (register === 'medios') lineIdx = 2
             if (register === 'graves') lineIdx = 4
             const y = Number.parseInt(this.lines[lineIdx].attr('y1'))
             dot.circle.attr('cy', y)
-            dot.image.attr('y', y - (this.dotCoef * this.dotRadius)/2)
-
+            dot.image.attr('y', y - (this.dotCoef * this.dotRadius) / 2)
         },
 
         dotsChanged(diff) {
@@ -178,12 +190,16 @@ export default {
                 this.state.dots.forEach((dot, idx) => {
                     const src = srcs[idx]
                     if (dot.sample == '' || dot.bank == '') return
-                    this.$emit('dotchange', { idx, ...this.state.dots[idx], src })
+                    this.$emit('dotchange', {
+                        idx,
+                        ...this.state.dots[idx],
+                        src,
+                    })
                 })
             }
         },
 
-        dotStepped({idx, note, time}) {
+        dotStepped({ idx }) {
             this.dots[idx].circle.animate(
                 { r: this.dotRadius * 1.5, strokeWidth: 3 },
                 80,
@@ -217,18 +233,22 @@ export default {
             if (steps === 0)
                 throw Error(`steps cannot be 0 and ${steps} was used.`)
             if (idx >= steps)
-                throw Error(`idx has to be less than steps and idx was ${idx} and steps was ${steps}.`)
+                throw Error(
+                    `idx has to be less than steps and idx was ${idx} and steps was ${steps}.`
+                )
             if (vmin > vmax)
-                throw Error(`vmin has to be less than vmax and vmin was ${vmin} and vmax was ${vmax}`)
+                throw Error(
+                    `vmin has to be less than vmax and vmin was ${vmin} and vmax was ${vmax}`
+                )
             const step = (vmax - vmin) / (steps * 2)
             return vmin + step * idx * 2 + step
-        }
-    }
+        },
+    },
 }
 </script>
 
 <style lang="scss">
-@import "../styles/bravura-regular";
+@import '../styles/bravura-regular';
 
 #sheetContainer {
     grid-area: sheet;
@@ -250,7 +270,7 @@ export default {
     stroke-width: 1px;
 }
 .time-signature {
-    font-family: "bravuraregular";
+    font-family: 'bravuraregular';
     font-size: 30px;
 }
 .inactive {

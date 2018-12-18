@@ -14,5 +14,5 @@ export const store = {
         playing: false,
         recording: false,
         showSheet: true,
-    }
+    },
 }

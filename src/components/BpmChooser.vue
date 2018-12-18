@@ -1,22 +1,18 @@
 <template>
-  <div
-    id="bpms"
-    :class="orientation"
-  >
-    <div
-      v-for="option in options"
-      :key="option"
-      class="bpm no-select"
-      :class="{ active: option === bpm }"
-      @click="change(option)"
-    >
-      {{ option }}
+    <div id="bpms" :class="orientation">
+        <div
+            v-for="option in options"
+            :key="option"
+            class="bpm no-select"
+            :class="{ active: option === bpm }"
+            @click="change(option)"
+        >
+            {{ option }}
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
-import app from '../App.vue'
 import Tone from 'tone'
 
 export default {
@@ -24,14 +20,14 @@ export default {
     props: {
         default: {
             type: Number,
-            default: 60
-        }
+            default: 60,
+        },
     },
     data() {
         return {
             options: [44, 52, 60, 80, 100, 120, 140],
             bpm: this.default,
-            orientation: 'vertical'
+            orientation: 'vertical',
         }
     },
     mounted() {
@@ -53,8 +49,8 @@ export default {
         resize() {
             this.orientation =
                 window.innerWidth >= 768 ? 'vertical' : 'horizontal'
-        }
-    }
+        },
+    },
 }
 </script>
 

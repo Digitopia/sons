@@ -10,20 +10,26 @@
             </tr>
             <tr v-for="register in registers" :key="register">
                 <th>
-                    {{ register | wordize }}<br>
-                    ({{register | firstLetter}})
+                    {{ register | wordize }}<br />
+                    ({{ register | firstLetter }})
                 </th>
-                <td v-for="(sound, idx) in getSounds(register, state.bank.id)" :key="idx">
-                    <img v-if="sound.icon.includes('holder')" v-holder="sound.icon">
+                <td
+                    v-for="(sound, idx) in getSounds(register, state.bank.id)"
+                    :key="idx"
+                >
+                    <img
+                        v-if="sound.icon.includes('holder')"
+                        v-holder="sound.icon"
+                    />
                     <img
                         v-else
                         :src="require(`@/${sound.icon}`)"
                         :alt="`image for ${sound.icon}`"
-                        :class="{active: activeSound === sound}"
+                        :class="{ active: activeSound === sound }"
                         :data-sample="sound.sample"
                         @dragstart="drag"
                         @touchstart="touchstart(sound)"
-                    >
+                    />
                 </td>
             </tr>
         </table>
@@ -31,7 +37,6 @@
 </template>
 
 <script>
-
 import Vue from 'vue'
 
 import { store } from '@/store'
@@ -41,16 +46,7 @@ import VueHolder from 'vue-holderjs'
 Vue.use(VueHolder)
 
 export default {
-
     name: 'Soundbanks',
-
-    data() {
-        return {
-            state: store.state,
-            registers: ['agudos', 'medios', 'graves'],
-            activeSound: null,
-        }
-    },
 
     filters: {
         wordize: function(register) {
@@ -60,6 +56,14 @@ export default {
         },
         firstLetter: function(str) {
             return str.charAt(0).toUpperCase()
+        },
+    },
+
+    data() {
+        return {
+            state: store.state,
+            registers: ['agudos', 'medios', 'graves'],
+            activeSound: null,
         }
     },
 
@@ -68,7 +72,6 @@ export default {
     },
 
     methods: {
-
         getSounds(register, bankId) {
             const bank = this.state.banks.find(bank => bank.id === bankId)
             return bank.sounds.filter(sound => sound.register === register)
@@ -85,28 +88,33 @@ export default {
             const path = `sounds/${id}`
             const paths = sounds.map(sound => `${path}/${sound.sample}`)
             const mappings = {}
-            paths.forEach((path, idx) => mappings[sounds[idx].sample] = path)
-            this.state.players[id] = new Tone.Players(mappings).toMaster(),
-            console.log(`Loaded bank ${id}`)
+            paths.forEach((path, idx) => (mappings[sounds[idx].sample] = path))
+            ;(this.state.players[id] = new Tone.Players(mappings).toMaster()),
+                console.log(`Loaded bank ${id}`)
         },
 
         change(dir) {
-            const idx = this.state.banks.findIndex(bank => bank.id === this.state.bank.id)
+            const idx = this.state.banks.findIndex(
+                bank => bank.id === this.state.bank.id
+            )
             if (idx + dir >= this.state.banks.length || idx + dir < 0) return
-            const bank = this.state.banks[idx+dir]
+            const bank = this.state.banks[idx + dir]
             this.state.bank = bank
             this.loadBank(bank.id)
         },
 
         drag(evt) {
-            evt.dataTransfer.setData( 'sample', evt.target.getAttribute('data-sample') )
+            evt.dataTransfer.setData(
+                'sample',
+                evt.target.getAttribute('data-sample')
+            )
             evt.dataTransfer.setData('src', evt.target.src)
         },
 
         touchstart(sound) {
             this.activeSound = sound !== this.activeSound ? sound : undefined
-        }
-    }
+        },
+    },
 }
 </script>
 

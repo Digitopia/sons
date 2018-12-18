@@ -1,29 +1,30 @@
 <template>
-    <div id="app" v-cloak class="no-select">
+    <div v-cloak id="app" class="no-select">
         <h2 class="header">Caça Sons</h2>
 
-        <Soundbanks class="no-select"/>
-        <Shape/>
-        <BpmChooser :default="80"/>
+        <Soundbanks class="no-select" />
+        <Shape />
+        <BpmChooser :default="80" />
 
         <div id="dotsChooser" class="no-select">
             <span v-for="(dot, idx) in dots" :key="dot">
                 <span
                     class="possibleDot"
-                    :class="{active: dot === state.dot}"
+                    :class="{ active: dot === state.dot }"
                     @click="state.dot = dot"
-                >{{ dot }}</span>
+                    >{{ dot }}</span
+                >
                 <span v-if="idx !== dots.length - 1">&nbsp;/&nbsp;</span>
             </span>
         </div>
 
-        <Controls class="no-select"/>
+        <Controls class="no-select" />
 
         <div id="open" class="control cursor-hover">
             <i class="fa fa-plus" @click="toggleSheet"></i>
         </div>
 
-        <Sheet :numerator="3" class="no-select"/>
+        <Sheet :numerator="3" class="no-select" />
     </div>
 </template>
 
@@ -34,55 +35,50 @@ import BpmChooser from '@/components/BpmChooser.vue'
 import Controls from '@/components/Controls.vue'
 import Sheet from '@/components/Sheet.vue'
 
-import { throttle, debounce } from 'lodash'
+import { debounce } from 'lodash'
 import { store } from '@/store'
 
 export default {
-
-    name: 'app',
-
-    data() {
-        return {
-            dots: [2, 3, 4],
-            state: store.state
-        }
-    },
+    name: 'App',
 
     components: {
         BpmChooser,
         Controls,
         Shape,
         Sheet,
-        Soundbanks
+        Soundbanks,
+    },
+
+    data() {
+        return {
+            dots: [2, 3, 4],
+            state: store.state,
+        }
     },
 
     watch: {
         'state.dot': function() {
             const diff = this.state.dot - this.state.dots.length
-            if (diff > 0) { // adding dots
-                for (let i = 0; i < diff; i++) this.state.dots.push({
-                    bank: '', sample: ''
-                })
-            } else { // removing dots
+            if (diff > 0) {
+                // adding dots
+                for (let i = 0; i < diff; i++)
+                    this.state.dots.push({
+                        bank: '',
+                        sample: '',
+                    })
+            } else {
+                // removing dots
                 for (let i = 0; i < Math.abs(diff); i++) this.state.dots.pop()
             }
             this.$root.$emit('dotschange', diff)
-        }
-    },
-
-    methods: {
-        changeDot(dot) {
-            store.changeDot(dot)
         },
-        toggleSheet() {
-            store.toggleSheet()
-        }
     },
 
     created() {
         for (let i = 0; i < this.state.dot; i++) {
             this.state.dots.push({
-                bank: '', sample: ''
+                bank: '',
+                sample: '',
             })
         }
     },
@@ -94,24 +90,36 @@ export default {
                 // store.changeDot(Number.parseInt(e.key))
             }
         })
-        window.addEventListener('resize', debounce(() => {
-            this.$root.$emit('custom-resize')
-        }, 250))
-    }
+        window.addEventListener(
+            'resize',
+            debounce(() => {
+                this.$root.$emit('custom-resize')
+            }, 250)
+        )
+    },
+
+    methods: {
+        changeDot(dot) {
+            store.changeDot(dot)
+        },
+        toggleSheet() {
+            store.toggleSheet()
+        },
+    },
 }
 </script>
 
 <style lang="scss">
-@import "styles/globals";
+@import 'styles/globals';
 
-@import url("https://fonts.googleapis.com/css?family=Lato");
+@import url('https://fonts.googleapis.com/css?family=Lato');
 
 html,
 body {
     box-sizing: border-box;
     max-width: 1366px;
     margin: 0 auto;
-    font-family: "Lato", sans-serif;
+    font-family: 'Lato', sans-serif;
     // font-family: "Helvetica";
     height: 100vh;
 }
@@ -123,12 +131,12 @@ body {
     grid-template-columns: repeat(3, 1fr);
     grid-gap: 10px;
     grid-template-areas:
-        "header      header      header"
-        "soundbank   shape       bpms"
-        "dotsChooser dotsChooser dotsChooser"
-        "controls    controls    controls"
-        "open        .           ."
-        ".           sheet       .";
+        'header      header      header'
+        'soundbank   shape       bpms'
+        'dotsChooser dotsChooser dotsChooser'
+        'controls    controls    controls'
+        'open        .           .'
+        '.           sheet       .';
 }
 
 .header {
@@ -168,5 +176,5 @@ body {
 }
 
 // @TODO: this should be able to be at the top for better clarity
-@import "styles/breakpoints";
+@import 'styles/breakpoints';
 </style>
