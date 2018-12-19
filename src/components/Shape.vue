@@ -10,16 +10,17 @@ import Shake from 'shake.js'
 
 export default {
     name: 'Shape',
+
     data() {
         return {
             state: store.state,
             segments: [],
-            r: 25,
+            r: 22,
             snap: null,
             dots: [],
         }
     },
-    watch: {},
+
     mounted() {
         this.init()
         this.$root.$on('dotchange', this.dotChanged)
@@ -29,6 +30,7 @@ export default {
         // listener to fake stuff
         this.$on('dotchange', this.dotChanged)
     },
+
     methods: {
         init() {
             this.snap = Snap('#svg')
@@ -67,6 +69,7 @@ export default {
 
         dotChanged(dot) {
             console.log('shape dotchange', dot)
+            console.log(this.dots[dot.idx])
             this.dots[dot.idx].image.attr({ 'xlink:href': dot.src })
             this.dots[dot.idx].sample = dot.sample
         },
@@ -179,20 +182,37 @@ export default {
                 this.segments.push(...[s1, s2, s3, s4])
             }
 
+            const dotImageSide = this.r * 2 * 0.8
+
             this.dots.forEach((dot, idx) => {
                 dot.attr({ 'data-dot': idx })
                 dot.addClass('dot')
                 dot.sample = ''
                 dot.image = this.snap
-                    .image('', dot.attr('cx') - 20, dot.attr('cy') - 20, 40, 40)
+                    .image(
+                        '',
+                        dot.attr('cx') - dotImageSide / 2,
+                        dot.attr('cy') - dotImageSide / 2,
+                        dotImageSide,
+                        dotImageSide
+                    )
                     .attr({ 'data-dot': idx })
 
                 dot.node.addEventListener('dragover', this.dragover)
-                dot.node.addEventListener('drop', this.drop)
+                dot.node.addEventListener('drop', e => {
+                    this.click(e, idx)
+                })
                 dot.image.node.addEventListener('dragover', this.dragover)
-                dot.image.node.addEventListener('drop', this.drop)
-                dot.image.node.addEventListener('touchstart', () => {
-                    // TODO: do something...
+                dot.image.node.addEventListener('drop', e => {
+                    this.click(e, idx)
+                })
+
+                const events = ['click', 'touchstart']
+                events.forEach(event => {
+                    dot.image.node.addEventListener(event, e => {
+                        console.log('idx', idx)
+                        this.click(e, idx)
+                    })
                 })
                 dot.image.appendTo(this.snap)
             })
@@ -200,25 +220,29 @@ export default {
             this.segments.forEach(segment =>
                 segment.attr({
                     stroke: 'black',
-                    strokeWidth: '12px',
+                    strokeWidth: '10px',
                 })
             )
         },
 
-        dragover(evt) {
-            evt.preventDefault()
-        },
+        click(evt, idx) {
+            if (evt.preventDefault) evt.preventDefault()
+            if (evt.stopPropagation) evt.stopPropagation()
 
-        drop(evt) {
-            evt.preventDefault()
-            const idx = Number.parseInt(evt.target.getAttribute('data-dot'))
-            const src = evt.dataTransfer.getData('src')
             const dot = {
                 bank: this.state.bank.id,
-                sample: evt.dataTransfer.getData('sample'),
+                sample: this.state.sampleActive.sample,
             }
             this.state.dots[idx] = dot
-            this.$root.$emit('dotchange', { idx, ...dot, src })
+            this.$root.$emit('dotchange', {
+                idx,
+                ...dot,
+                src: document.querySelector('img.active').getAttribute('src'),
+            })
+        },
+
+        dragover(evt) {
+            evt.preventDefault()
         },
     },
 }
@@ -230,7 +254,7 @@ export default {
     width: 300px;
     height: 300px;
     image:hover {
-        cursor: pointer;
+        cursor: pointer; // TODO: this should not be a pointer if there's no activeSample selected
     }
 }
 .dot {

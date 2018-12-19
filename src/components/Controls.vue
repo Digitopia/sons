@@ -1,15 +1,28 @@
 <template>
-    <div id="controls">
-        <FontAwesomeIcon icon="expand" @click="fullscreen"></FontAwesomeIcon>
-        <FontAwesomeIcon
-            class="play"
-            :icon="['far', state.playing ? 'stop-circle' : 'play-circle']"
-            @click="state.playing = !state.playing"
-        ></FontAwesomeIcon>
-        <FontAwesomeIcon :icon="['far', 'dot-circle']"></FontAwesomeIcon>
-        <div class="control-text">FULLSCREEN</div>
-        <div class="control-text">{{ state.playing ? 'STOP' : 'PLAY' }}</div>
-        <div class="control-text">REC</div>
+    <div id="controls" class="content centered">
+        <div v-if="!state.pwa" class="control fullscreen">
+            <FontAwesomeIcon icon="expand" @click="toggleFullscreen" />
+            <span>FULLSCREEN</span>
+        </div>
+        <div v-else></div>
+        <div class="control">
+            <FontAwesomeIcon
+                class="play"
+                :icon="['far', state.playing ? 'stop-circle' : 'play-circle']"
+                @click="state.playing = !state.playing"
+            />
+            <span>{{ state.playing ? 'STOP' : 'PLAY' }}</span>
+        </div>
+        <div class="control">
+            <FontAwesomeIcon :icon="['far', 'dot-circle']" @click="record" />
+            <span
+                :class="{ 'recording animated flash infinite slow': recording }"
+                >REC</span
+            >
+        </div>
+
+        <!-- <FontAwesomeIcon icon="trash" @click="trash" /> -->
+        <!-- <FontAwesomeIcon icon="info-circle" /> -->
     </div>
 </template>
 
@@ -22,41 +35,66 @@ import FileSaver from 'file-saver'
 import { store } from '@/store'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faExpand, faPlus } from '@fortawesome/free-solid-svg-icons'
+import {
+    faExpand,
+    faPlus,
+    faMinus,
+    faTrash,
+    faInfoCircle,
+} from '@fortawesome/free-solid-svg-icons'
 import {
     faPlayCircle,
     faStopCircle,
     faDotCircle,
 } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-library.add(faExpand, faPlayCircle, faStopCircle, faDotCircle, faPlus)
+library.add(
+    faExpand,
+    faPlayCircle,
+    faStopCircle,
+    faDotCircle,
+    faPlus,
+    faMinus,
+    faTrash,
+    faInfoCircle
+)
 Vue.component('FontAwesomeIcon', FontAwesomeIcon)
 
 export default {
     name: 'Controls',
+
     data() {
         return {
             state: store.state,
             recording: false,
         }
     },
+
     watch: {
         'state.playing': function() {
             if (this.state.playing) this.play()
             else this.stop()
         },
     },
-    mounted() {},
+
+    created() {
+        this.recorder = new window.Recorder(Tone.Master.input)
+    },
+
     methods: {
         play() {
             if (Tone.context.state === 'suspended') Tone.context.resume()
             Tone.Transport.position = '0:0:0'
             Tone.Transport.start()
         },
+
         stop() {
             Tone.Transport.stop()
+            this.state.dotActive = 0 // since we're using Tone.Loop instead of Tone.Sequenece e. g.
         },
+
         record() {
+            if (!this.state.playing) this.state.playing = true
             this.recording = !this.recording
             if (this.recording) {
                 this.recorder.record()
@@ -65,11 +103,19 @@ export default {
                 this.recorder.exportWAV(blob => {
                     FileSaver.saveAs(blob, 'Gravação Caça Sons.wav')
                 })
+                this.state.playing = false
             }
         },
-        fullscreen() {
-            console.log('fullscreen')
+
+        toggleFullscreen() {
             if (screenfull.enabled) screenfull.toggle()
+        },
+
+        trash() {
+            this.state.dots.forEach(dot => {
+                dot.bank = ''
+                dot.sample = ''
+            })
         },
     },
 }
@@ -78,10 +124,10 @@ export default {
 <style lang="scss">
 #controls {
     grid-area: controls;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    justify-items: center;
+    display: flex;
     align-items: center;
+    justify-items: flex-start;
+    text-align: center;
     svg {
         font-size: 2em;
         &:hover {
@@ -91,16 +137,23 @@ export default {
             outline: none;
         }
     }
-}
-svg.play {
-    font-size: 3.5em !important;
-}
-.control-text {
-    padding-top: 2px;
-    color: grey;
-    font-size: 10px;
-}
-.recording {
-    color: red;
+    .control {
+        display: inline-block;
+        .control-text {
+            padding-top: 2px;
+            color: grey;
+            font-size: 10px;
+        }
+        span {
+            display: block;
+            text-align: center;
+        }
+    }
+    .recording {
+        color: rgb(231, 2, 2);
+    }
+    svg.play {
+        font-size: 3.5em !important;
+    }
 }
 </style>

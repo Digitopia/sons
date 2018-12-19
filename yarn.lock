@@ -1343,11 +1343,6 @@ atob@^2.1.1:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-audiorecorder@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/audiorecorder/-/audiorecorder-0.0.2.tgz#df8a14e5e50a8b1502ef56ebf1880dcdcdbe0a2e"
-  integrity sha1-34oU5eUKixUC71br8YgNzc2+Ci4=
-
 autoprefixer@^8.6.5:
   version "8.6.5"
   resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-8.6.5.tgz#343f3d193ed568b3208e00117a1b96eb691d4ee9"

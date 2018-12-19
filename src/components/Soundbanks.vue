@@ -3,9 +3,21 @@
         <table cellpadding="0" cellspacing="0">
             <tr>
                 <th colspan="100%" class="bank-title">
-                    <span class="left" @click="change(-1)">←</span>
+                    <span
+                        class="left"
+                        :class="{ disabled: firstBank }"
+                        @click.prevent.stop="change(-1)"
+                        @touchstart.prevent.stop="change(-1)"
+                        >←</span
+                    >
                     {{ state.bank.name }}
-                    <span class="right" @click="change(1)">→</span>
+                    <span
+                        class="right"
+                        :class="{ disabled: lastBank }"
+                        @click.prevent.stop="change(1)"
+                        @touchstart.prevent.stop="change(1)"
+                        >→</span
+                    >
                 </th>
             </tr>
             <tr v-for="register in registers" :key="register">
@@ -25,10 +37,11 @@
                         v-else
                         :src="require(`@/${sound.icon}`)"
                         :alt="`image for ${sound.icon}`"
-                        :class="{ active: activeSound === sound }"
+                        :class="{ active: state.sampleActive === sound }"
                         :data-sample="sound.sample"
-                        @dragstart="drag"
-                        @touchstart="touchstart(sound)"
+                        @dragstart="drag($event, sound)"
+                        @click.prevent.stop="touchstart(sound)"
+                        @touchstart.prevent.stop="touchstart(sound)"
                     />
                 </td>
             </tr>
@@ -63,8 +76,21 @@ export default {
         return {
             state: store.state,
             registers: ['agudos', 'medios', 'graves'],
-            activeSound: null,
         }
+    },
+
+    computed: {
+        bankId() {
+            return this.state.banks.findIndex(
+                bank => bank.id === this.state.bank.id
+            )
+        },
+        firstBank() {
+            return this.bankId === 0
+        },
+        lastBank() {
+            return this.bankId === this.state.banks.length - 1
+        },
     },
 
     mounted() {
@@ -89,8 +115,8 @@ export default {
             const paths = sounds.map(sound => `${path}/${sound.sample}`)
             const mappings = {}
             paths.forEach((path, idx) => (mappings[sounds[idx].sample] = path))
-            ;(this.state.players[id] = new Tone.Players(mappings).toMaster()),
-                console.log(`Loaded bank ${id}`)
+            this.state.players[id] = new Tone.Players(mappings).toMaster()
+            console.log(`Loaded bank ${id}`)
         },
 
         change(dir) {
@@ -103,7 +129,8 @@ export default {
             this.loadBank(bank.id)
         },
 
-        drag(evt) {
+        drag(evt, sound) {
+            this.touchstart(sound)
             evt.dataTransfer.setData(
                 'sample',
                 evt.target.getAttribute('data-sample')
@@ -112,13 +139,17 @@ export default {
         },
 
         touchstart(sound) {
-            this.activeSound = sound !== this.activeSound ? sound : undefined
+            this.state.sampleActive =
+                sound !== this.state.sampleActive ? sound : undefined
         },
     },
 }
 </script>
 
 <style lang="scss">
+.no-pointer {
+    cursor: default;
+}
 #soundbank {
     grid-area: soundbank;
     text-align: center;
@@ -171,6 +202,13 @@ export default {
         }
         &.right {
             float: right;
+        }
+        &.disabled {
+            color: white;
+            opacity: 0.5;
+            &:hover {
+                cursor: default;
+            }
         }
     }
 }

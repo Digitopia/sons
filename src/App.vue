@@ -1,43 +1,36 @@
 <template>
-    <Transition appear appear-active-class="animated fadeIn fast">
+    <Transition appear appear-active-class="animated fadeIn slow">
         <div v-cloak id="app" class="no-select">
             <h2 class="header">Caça Sons</h2>
 
-            <Soundbanks class="no-select" />
+            <Soundbanks />
             <Shape />
             <BpmChooser :default="80" />
 
-            <div id="dotsChooser" class="no-select">
+            <div id="dotsChooser">
                 <span v-for="(dot, idx) in dots" :key="dot">
                     <span
                         class="possibleDot"
                         :class="{ active: dot === state.dot }"
-                        @click="state.dot = dot"
+                        @click.prevent.stop="state.dot = dot"
+                        @touchstart.prevent.stop="state.dot = dot"
                         >{{ dot }}</span
                     >
                     <span v-if="idx !== dots.length - 1">&nbsp;/&nbsp;</span>
                 </span>
             </div>
 
-            <Controls class="no-select" />
+            <Controls />
 
-            <div
-                id="open"
-                class="control"
-                @click="state.showSheet = !state.showSheet"
-            >
-                <FontAwesomeIcon :icon="'plus'"></FontAwesomeIcon>
+            <div id="sheetToggle" @click="toggleSheet">
+                <FontAwesomeIcon class="animated" icon="plus"></FontAwesomeIcon>
             </div>
 
             <Transition
                 enter-active-class="animated bounceInDown"
                 leave-active-class="animated bounceOutUp"
             >
-                <Sheet
-                    v-show="state.showSheet"
-                    :numerator="3"
-                    class="no-select"
-                />
+                <Sheet v-show="state.showSheet" :numerator="4" />
             </Transition>
         </div>
     </Transition>
@@ -90,6 +83,10 @@ export default {
     },
 
     created() {
+        const params = new URLSearchParams(window.location.search)
+        const utmSource = params.get('utm_source')
+        this.state.pwa = utmSource === 'homescreen'
+
         for (let i = 0; i < this.state.dot; i++) {
             this.state.dots.push({
                 bank: '',
@@ -112,6 +109,13 @@ export default {
             }, 250)
         )
     },
+
+    methods: {
+        toggleSheet(e) {
+            this.state.showSheet = !this.state.showSheet
+            e.srcElement.classList.add('rotateIn')
+        },
+    },
 }
 </script>
 
@@ -126,8 +130,8 @@ body {
     max-width: 1366px;
     margin: 0 auto;
     font-family: 'Lato', sans-serif;
-    // font-family: "Helvetica";
     height: 100vh;
+    background: rgb(248, 249, 250);
 }
 
 #app {
@@ -139,9 +143,9 @@ body {
     grid-template-areas:
         'header      header      header'
         'soundbank   shape       bpms'
-        'dotsChooser dotsChooser dotsChooser'
-        'controls    controls    controls'
-        'open        .           .'
+        '.           dotsChooser .'
+        '.           controls    .'
+        'sheetToggle .           .'
         '.           sheet       .';
 }
 
@@ -150,8 +154,8 @@ body {
     font-size: 2em;
 }
 
-#open {
-    grid-area: open;
+#sheetToggle {
+    grid-area: sheetToggle;
     opacity: 0.8;
     &:hover {
         cursor: pointer;

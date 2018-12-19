@@ -16,12 +16,12 @@
             "shape"
             "controls"
             "dotsChooser"
-            "open"
+            "sheetToggle"
             "sheet";
     }
     #bpms {
         --border-width: 3px;
-        --side: 34.5px;
+        --bpm-side: 34.5px;
     }
 }
 
@@ -41,12 +41,12 @@
             "soundbank   shape"
             "controls    controls"
             "dotsChooser dotsChooser"
-            "open        open"
+            "sheetToggle sheetToggle"
             "sheet       sheet";
     }
     #bpms {
         --border-width: 3px;
-        --side: 40px;
+        --bpm-side: 40px;
     }
 }
 

@@ -26,10 +26,14 @@ import Snap from 'snapsvg'
 
 export default {
     name: 'Sheet',
+
     props: {
         numerator: {
             type: Number,
-            default: 2,
+            required: true,
+            validator: function(val) {
+                return [2, 3, 4].indexOf(val) !== -1
+            },
         },
     },
 
@@ -70,7 +74,7 @@ export default {
 
     watch: {
         'state.dot': function() {
-            this.num.val = this.dot
+            this.num.val = this.state.dot
         },
     },
 
