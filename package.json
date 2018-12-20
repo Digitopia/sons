@@ -20,7 +20,6 @@
     "sass-loader": "^7.1.0",
     "screenfull": "^3.3.3",
     "shake.js": "^1.2.2",
-    "snapsvg": "^0.5.1",
     "tone": "^0.12.80",
     "vue": "^2.5.21",
     "vue-holderjs": "^1.0.2"

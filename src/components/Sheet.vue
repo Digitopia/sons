@@ -1,28 +1,72 @@
 <template>
     <div id="sheetContainer">
         <svg id="sheet" charset="utf-8">
-            <text
-                id="numerator"
-                class="time-signature"
-                :x="num.x"
-                :y="num.y"
-                v-html="numChar"
-            ></text>
-            <text
-                id="denominator"
-                class="time-signature"
-                :x="denom.x"
-                :y="denom.y"
-            >
-                &#57476;
-            </text>
+            <g class="time-signature">
+                <text
+                    id="numerator"
+                    ref="numerator"
+                    class="time-signature"
+                    :x="num.x"
+                    :y="num.y"
+                    v-html="numChar"
+                ></text>
+
+                <text
+                    id="denominator"
+                    class="time-signature"
+                    :x="denom.x"
+                    :y="denom.y"
+                >
+                    &#57476;
+                </text>
+            </g>
+
+            <g class="lines">
+                <line
+                    v-for="(line, idx) in lines"
+                    :key="`line-${idx}`"
+                    class="sheet-line"
+                    :x1="line.x1"
+                    :y1="line.y1"
+                    :x2="line.x2"
+                    :y2="line.y2"
+                />
+            </g>
+
+            <g class="labels">
+                <text
+                    v-for="(label, idx) in labels"
+                    :key="`label-${idx}`"
+                    :x="label.x"
+                    :y="label.y"
+                >
+                    {{ label.text }}
+                </text>
+            </g>
+
+            <g v-for="(dot, idx) in dots" :key="`dot-${idx}`" class="dots">
+                <circle
+                    :cx="dot.x"
+                    :cy="dot.y"
+                    :r="r"
+                    :class="{ inactive: dot.image === '' }"
+                    class="dot"
+                ></circle>
+                <image
+                    :href="dot.image"
+                    :set="(factor = 0.8)"
+                    :x="dot.x - r * factor"
+                    :y="dot.y - r * factor"
+                    :width="r * 2 * factor"
+                />
+            </g>
         </svg>
     </div>
 </template>
 
 <script>
+import Vue from 'vue'
 import { store } from '../store'
-import Snap from 'snapsvg'
 
 export default {
     name: 'Sheet',
@@ -40,9 +84,7 @@ export default {
     data() {
         return {
             state: store.state,
-            segments: [],
-            r: 25,
-            lines: [],
+            r: 10,
             px: 30, // padding x
             py: 50, // padding y
             num: {
@@ -54,7 +96,10 @@ export default {
                 x: null,
                 y: null,
             },
+            nlines: 5,
+            lines: [],
             dots: [],
+            labels: [],
         }
     },
 
@@ -73,103 +118,95 @@ export default {
     },
 
     watch: {
-        'state.dot': function() {
+        'state.dot': function(newDot, oldDot) {
             this.num.val = this.state.dot
+            const diff = newDot - oldDot
+            this.reset(diff)
+            this.update()
         },
+    },
+
+    created() {
+        for (let i = 0; i < this.state.dot; i++) {
+            this.dots.push({
+                x: 0,
+                y: 0,
+                image: '',
+            })
+        }
     },
 
     mounted() {
         this.init()
         this.$root.$on('dotchange', this.dotChanged)
-        this.$root.$on('dotschange', this.dotsChanged)
         this.$root.$on('dotstep', this.dotStepped)
-
-        // listener to fake stuff
-        this.$on('dotchange', this.dotChanged)
     },
 
     methods: {
         init() {
-            this.snap = Snap('#sheet')
-
-            const w =
-                this.snap.node.clientWidth ||
-                this.snap.node.getBoundingClientRect().width
-            const h =
-                this.snap.node.clientHeight ||
-                this.snap.node.getBoundingClientRect().height
+            const w = this.$el.clientWidth
+            const h = this.$el.clientHeight
             const px = this.px
             const py = this.py
             const x1 = px
             const x2 = w - px
 
-            // Draw lines
-            const n = 5
-            const ys = []
-            for (let i = 0; i < n; i += 1) {
-                const y = py + ((h - 2 * py) / (n - 1)) * i
-                ys.push(y)
-                const line = this.snap.line(x1, y, x2, y).addClass('sheet-line')
-                this.lines.push(line)
+            // Lines
+            for (let i = 0; i < this.nlines; i += 1) {
+                const y = py + ((h - 2 * py) / (this.nlines - 1)) * i
+                this.lines.push({ x1, x2, y1: y, y2: y })
             }
 
-            // Draw labels
-            const xt = x2 + px / 4
-            this.snap.text(xt, ys[0] + 5, 'A')
-            this.snap.text(xt, ys[2] + 5, 'M')
-            this.snap.text(xt, ys[4] + 5, 'G')
+            // Labels
+            const labelX = x2 + px / 4
+            this.labels.push({
+                x: labelX,
+                y: this.lines[0].y1 + 5,
+                text: 'A',
+            })
+            this.labels.push({
+                x: labelX,
+                y: this.lines[2].y1 + 5,
+                text: 'M',
+            })
+            this.labels.push({
+                x: labelX,
+                y: this.lines[4].y1 + 5,
+                text: 'G',
+            })
 
-            // Position num and denom
-            const ym = ys[2]
-            const tsx =
-                px / 2 - this.snap.select('#numerator').getBBox().width / 2 // time signature x
+            // Time Signature
+            const ym = this.lines[2].y1
+            const timeSignatureX = px / 2 - this.$refs.numerator.clientWidth / 2
             const offset = 12 // offset from ym
-            this.num.x = tsx
+            this.num.x = timeSignatureX
             this.num.y = ym - offset
-            this.denom.x = tsx
+            this.denom.x = timeSignatureX
             this.denom.y = ym + offset
 
-            this.initDots()
+            this.update()
         },
 
-        initDots() {
+        update() {
             const padDot = 10
-            this.dotRadius = 10
-            this.dotCoef = 1.5
 
             const xmin = this.px + padDot
-            const xmax = this.snap.node.getBoundingClientRect().width - this.px
+            const xmax = this.$el.clientWidth - this.px
 
-            for (let idx = 0; idx < this.state.dot; idx++) {
-                // circle
-                const x = this.distribute(xmin, xmax, this.state.dot, idx)
-                const y =
-                    this.snap.node.getBoundingClientRect().height -
-                    this.dotRadius * 1.5
-                const circle = this.snap
-                    .circle(x, y, this.dotRadius)
-                    .attr('class', 'dot inactive')
-
-                // empty image
-                const r = this.dotRadius
-                const imgx = x - (r * this.dotCoef) / 2
-                const imgy = y - (r * this.dotCoef) / 2
-                const imgw = r * this.dotCoef
-                const imgh = r * this.dotCoef
-                const image = this.snap.image('', imgx, imgy, imgw, imgh)
-                this.dots.push({ circle, image })
+            for (let i = 0; i < this.state.dot; i++) {
+                const x = this.distribute(xmin, xmax, this.state.dot, i)
+                const y = this.$el.clientHeight - this.r * 1.5
+                this.updateDot(i, x, y)
             }
+        },
+
+        updateDot(idx, x, y) {
+            Vue.set(this.dots[idx], 'x', x)
+            Vue.set(this.dots[idx], 'y', y)
         },
 
         dotChanged(evt) {
             console.log('sheet dotchange', evt)
-
-            const dot = this.dots[evt.idx]
-
-            dot.circle.removeClass('inactive')
-
-            // update image
-            dot.image.attr('xlink:href', evt.src)
 
             // update height position
             const bank = this.state.banks.find(bank => bank.id === evt.bank)
@@ -180,53 +217,41 @@ export default {
             if (register === 'agudos') lineIdx = 0
             if (register === 'medios') lineIdx = 2
             if (register === 'graves') lineIdx = 4
-            const y = Number.parseInt(this.lines[lineIdx].attr('y1'))
-            dot.circle.attr('cy', y)
-            dot.image.attr('y', y - (this.dotCoef * this.dotRadius) / 2)
-        },
-
-        dotsChanged(diff) {
-            console.log('sheet dotschanged')
-            for (let i = 0; i < Math.abs(diff); i++) {
-                const srcs = this.dots.map(dot => dot.image.attr('xlink:href'))
-                this.reset()
-                this.initDots()
-                this.state.dots.forEach((dot, idx) => {
-                    const src = srcs[idx]
-                    if (dot.sample == '' || dot.bank == '') return
-                    this.$emit('dotchange', {
-                        idx,
-                        ...this.state.dots[idx],
-                        src,
-                    })
-                })
-            }
+            const y = this.lines[lineIdx].y1
+            this.updateDot(evt.idx, this.dots[evt.idx].x, y)
+            Vue.set(this.dots[evt.idx], 'image', evt.src)
+            // Vue.set(this.dots[evt.idx], 'image', evt.src)
         },
 
         dotStepped({ idx }) {
-            this.dots[idx].circle.animate(
-                { r: this.dotRadius * 1.5, strokeWidth: 3 },
-                80,
-                window.mina.easinout,
-                () => {
-                    this.dots[idx].circle.animate(
-                        { r: this.dotRadius, stroke: 'none' },
-                        80
-                    )
-                }
-            )
+            // snap version
+            // this.dots[idx].circle.animate(
+            //     { r: this.dotRadius * 1.5, strokeWidth: 3 },
+            //     80,
+            //     window.mina.easinout,
+            //     () => {
+            //         this.dots[idx].circle.animate(
+            //             { r: this.dotRadius, stroke: 'none' },
+            //             80
+            //         )
+            //     }
+            // )
+            // this.dots[idx].r = this.dots[idx].r * 2
+            // Vue.set(this.dots[idx], 'r', this.dots[idx].r * 2)
         },
 
-        /**
-         * This is a temporary function until animation between dotsChanged is implemented.
-         * For now just throw everything away and rebuild from state
-         */
-        reset() {
-            this.dots.forEach(dot => {
-                dot.image.remove()
-                dot.circle.remove()
-            })
-            this.dots = []
+        reset(diff) {
+            for (let i = 0; i < Math.abs(diff); i++) {
+                if (diff < 0) {
+                    this.dots.pop()
+                } else {
+                    this.dots.push({
+                        x: 0,
+                        y: 0,
+                        image: '',
+                    })
+                }
+            }
         },
 
         resize() {

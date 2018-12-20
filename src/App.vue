@@ -78,7 +78,15 @@ export default {
                 // removing dots
                 for (let i = 0; i < Math.abs(diff); i++) this.state.dots.pop()
             }
-            this.$root.$emit('dotschange', diff)
+
+            // when would try to play dots not shown in shape
+            if (
+                this.state.playing &&
+                diff < 0 &&
+                this.state.dotActive >= this.state.dots.length
+            ) {
+                this.state.dotActive = -1
+            }
         },
     },
 

@@ -1,5 +1,5 @@
 <template>
-    <div id="controls" class="content centered">
+    <div id="controls">
         <div v-if="!state.pwa" class="control fullscreen">
             <FontAwesomeIcon icon="expand" @click="toggleFullscreen" />
             <span>FULLSCREEN</span>
@@ -90,7 +90,7 @@ export default {
 
         stop() {
             Tone.Transport.stop()
-            this.state.dotActive = 0 // since we're using Tone.Loop instead of Tone.Sequenece e. g.
+            this.state.dotActive = -1 // since we're using Tone.Loop instead of Tone.Sequenece e. g.
         },
 
         record() {
