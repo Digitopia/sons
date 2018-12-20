@@ -21,7 +21,7 @@
             >
         </div>
 
-        <!-- <FontAwesomeIcon icon="trash" @click="trash" /> -->
+        <FontAwesomeIcon icon="trash" @click="trash" />
         <!-- <FontAwesomeIcon icon="info-circle" /> -->
     </div>
 </template>
@@ -116,6 +116,7 @@ export default {
                 dot.bank = ''
                 dot.sample = ''
             })
+            this.$root.$emit('dotsclear')
         },
     },
 }
@@ -138,6 +139,7 @@ export default {
         }
     }
     .control {
+        width: 100px;
         display: inline-block;
         .control-text {
             padding-top: 2px;

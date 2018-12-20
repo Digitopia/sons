@@ -132,6 +132,7 @@ export default {
                 x: 0,
                 y: 0,
                 image: '',
+                register: '',
             })
         }
     },
@@ -140,6 +141,7 @@ export default {
         this.init()
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotstep', this.dotStepped)
+        this.$root.$on('dotsclear', this.clear)
     },
 
     methods: {
@@ -195,7 +197,7 @@ export default {
 
             for (let i = 0; i < this.state.dot; i++) {
                 const x = this.distribute(xmin, xmax, this.state.dot, i)
-                const y = this.$el.clientHeight - this.r * 1.5
+                const y = this.getRegisterY(this.dots[i])
                 this.updateDot(i, x, y)
             }
         },
@@ -203,6 +205,22 @@ export default {
         updateDot(idx, x, y) {
             Vue.set(this.dots[idx], 'x', x)
             Vue.set(this.dots[idx], 'y', y)
+        },
+
+        getRegisterY(dot) {
+            let ret
+            if ('register' in dot && dot.register !== '') {
+                let lineIdx
+                console.log('dot.register', dot.register)
+                if (dot.register === 'agudos') lineIdx = 0
+                if (dot.register === 'medios') lineIdx = 2
+                if (dot.register === 'graves') lineIdx = 4
+                console.log(this.lines)
+                ret = this.lines[lineIdx].y1
+            } else {
+                ret = this.$el.clientHeight - this.r * 1.5
+            }
+            return ret
         },
 
         dotChanged(evt) {
@@ -213,14 +231,12 @@ export default {
             const register = bank.sounds.find(
                 sound => sound.sample === evt.sample
             ).register
-            let lineIdx
-            if (register === 'agudos') lineIdx = 0
-            if (register === 'medios') lineIdx = 2
-            if (register === 'graves') lineIdx = 4
-            const y = this.lines[lineIdx].y1
+
+            Vue.set(this.dots[evt.idx], 'register', register)
+
+            const y = this.getRegisterY(this.dots[evt.idx])
             this.updateDot(evt.idx, this.dots[evt.idx].x, y)
             Vue.set(this.dots[evt.idx], 'image', evt.src)
-            // Vue.set(this.dots[evt.idx], 'image', evt.src)
         },
 
         dotStepped({ idx }) {
@@ -252,6 +268,14 @@ export default {
                     })
                 }
             }
+        },
+
+        clear() {
+            this.dots.forEach(dot => {
+                dot.image = ''
+                dot.register = ''
+            })
+            this.update()
         },
 
         resize() {

@@ -86,6 +86,7 @@ export default {
         this.init()
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotstep', this.dotStepped)
+        this.$root.$on('dotsclear', this.clear)
     },
 
     methods: {
@@ -151,6 +152,13 @@ export default {
                     })
                 }
             }
+        },
+
+        clear() {
+            this.dots.forEach(dot => {
+                dot.image = ''
+                dot.sample = ''
+            })
         },
 
         dotStepped({ idx, note, time }) {
