@@ -1,38 +1,49 @@
 <template>
-    <div id="bpms" :class="orientation">
+    <div class="bpms" :class="orientation">
         <div
-            class="bpm no-select"
             v-for="option in options"
             :key="option"
+            class="bpm no-select"
             :class="{ active: option === bpm }"
-            @click="change(option)"
-        >{{ option }}</div>
+            @click.prevent.stop="change(option)"
+            @touchstart.prevent.stop="change(option)"
+        >
+            {{ option }}
+        </div>
     </div>
 </template>
 
 <script>
-import app from '../App.vue';
-import Tone from 'tone';
+import Tone from 'tone'
 
 export default {
     name: 'BpmChooser',
-    data() {
-        return {
-            options: [30, 44, 52, 60, 80, 100, 120],
-            bpm: this.default,
-            orientation: 'vertical'
-        };
-    },
+
     props: {
         default: {
             type: Number,
-            default: 60
+            default: 60,
+        },
+    },
+
+    data() {
+        return {
+            options: [44, 52, 60, 80, 100, 120, 140],
+            bpm: this.default,
+            orientation: 'vertical',
         }
     },
+
+    mounted() {
+        this.change(this.bpm)
+        window.addEventListener('resize', this.resize)
+        this.resize()
+    },
+
     methods: {
         change(bpm) {
-            this.bpm = bpm;
-            Tone.Transport.bpm.value = this.bpm;
+            this.bpm = bpm
+            Tone.Transport.bpm.value = this.bpm
             // document.querySelectorAll('#bpms div').forEach(bpmDiv => {
             //     bpmDiv.style.borderBottom = '';
             // });
@@ -40,25 +51,20 @@ export default {
             //     '#bpms .active'
             // ).previousSibling.style.borderBottom = 'none';
         },
+
         resize() {
             this.orientation =
-                window.innerWidth >= 768 ? 'vertical' : 'horizontal';
-        }
+                window.innerWidth >= 768 ? 'vertical' : 'horizontal'
+        },
     },
-    mounted() {
-        this.change(this.bpm);
-        window.addEventListener('resize', this.resize);
-        this.resize();
-    }
-};
+}
 </script>
 
 <style lang="scss">
-#bpms {
-    grid-area: bpms;
+.bpms {
     --border-width: 6px;
     --border: var(--border-width) solid black;
-    --side: 3em;
+    --bpm-side: 3em;
     div {
         text-align: center;
     }
@@ -67,9 +73,9 @@ export default {
     }
     .bpm {
         box-sizing: border-box;
-        // --side: 44px;
-        width: var(--side);
-        height: var(--side);
+        // --bpm-side: 44px;
+        width: var(--bpm-side);
+        height: var(--bpm-side);
         display: grid;
         align-items: center;
         font-size: 1em;
