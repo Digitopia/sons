@@ -1,5 +1,5 @@
 <template>
-    <div id="controls">
+    <div class="controls">
         <div v-if="!state.pwa" class="control fullscreen">
             <FontAwesomeIcon icon="expand" @click="toggleFullscreen" />
             <span>FULLSCREEN</span>
@@ -21,7 +21,6 @@
             >
         </div>
 
-        <FontAwesomeIcon icon="trash" @click="trash" />
         <!-- <FontAwesomeIcon icon="info-circle" /> -->
     </div>
 </template>
@@ -110,21 +109,12 @@ export default {
         toggleFullscreen() {
             if (screenfull.enabled) screenfull.toggle()
         },
-
-        trash() {
-            this.state.dots.forEach(dot => {
-                dot.bank = ''
-                dot.sample = ''
-            })
-            this.$root.$emit('dotsclear')
-        },
     },
 }
 </script>
 
 <style lang="scss">
-#controls {
-    grid-area: controls;
+.controls {
     display: flex;
     align-items: center;
     justify-items: flex-start;

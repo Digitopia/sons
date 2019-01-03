@@ -1,5 +1,5 @@
 <template>
-    <div id="bpms" :class="orientation">
+    <div class="bpms" :class="orientation">
         <div
             v-for="option in options"
             :key="option"
@@ -61,8 +61,7 @@ export default {
 </script>
 
 <style lang="scss">
-#bpms {
-    grid-area: bpms;
+.bpms {
     --border-width: 6px;
     --border: var(--border-width) solid black;
     --bpm-side: 3em;

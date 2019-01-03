@@ -1,6 +1,6 @@
 <template>
-    <div id="sheetContainer">
-        <svg id="sheet" charset="utf-8">
+    <div class="sheetContainer">
+        <svg>
             <g class="time-signature">
                 <text
                     id="numerator"
@@ -67,6 +67,7 @@
 <script>
 import Vue from 'vue'
 import { store } from '../store'
+import { TweenMax } from 'gsap/TweenMax'
 
 export default {
     name: 'Sheet',
@@ -211,11 +212,9 @@ export default {
             let ret
             if ('register' in dot && dot.register !== '') {
                 let lineIdx
-                console.log('dot.register', dot.register)
                 if (dot.register === 'agudos') lineIdx = 0
                 if (dot.register === 'medios') lineIdx = 2
                 if (dot.register === 'graves') lineIdx = 4
-                console.log(this.lines)
                 ret = this.lines[lineIdx].y1
             } else {
                 ret = this.$el.clientHeight - this.r * 1.5
@@ -224,8 +223,6 @@ export default {
         },
 
         dotChanged(evt) {
-            console.log('sheet dotchange', evt)
-
             // update height position
             const bank = this.state.banks.find(bank => bank.id === evt.bank)
             const register = bank.sounds.find(
@@ -240,20 +237,15 @@ export default {
         },
 
         dotStepped({ idx }) {
-            // snap version
-            // this.dots[idx].circle.animate(
-            //     { r: this.dotRadius * 1.5, strokeWidth: 3 },
-            //     80,
-            //     window.mina.easinout,
-            //     () => {
-            //         this.dots[idx].circle.animate(
-            //             { r: this.dotRadius, stroke: 'none' },
-            //             80
-            //         )
-            //     }
-            // )
-            // this.dots[idx].r = this.dots[idx].r * 2
-            // Vue.set(this.dots[idx], 'r', this.dots[idx].r * 2)
+            const r = this.r
+            const dot = this.$el.querySelectorAll('.dot')[idx]
+            const animationSpeed = 0.08
+            TweenMax.to(dot, animationSpeed, {
+                attr: { r: r * 1.5 },
+                onComplete: () => {
+                    TweenMax.to(dot, animationSpeed, { attr: { r } })
+                },
+            })
         },
 
         reset(diff) {
@@ -303,8 +295,7 @@ export default {
 <style lang="scss">
 @import '../styles/bravura-regular';
 
-#sheetContainer {
-    grid-area: sheet;
+.sheetContainer {
     text-align: center;
     transition: all 0.4s ease;
     width: 100%;

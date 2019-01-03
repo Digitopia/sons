@@ -15,9 +15,11 @@
             "soundbank"
             "shape"
             "controls"
+            "secondaryControls"
             "dotsChooser"
             "sheetToggle"
             "sheet";
+
     }
     #bpms {
         --border-width: 3px;
@@ -36,13 +38,14 @@
     #app {
         grid-template-columns: auto;
         grid-template-areas:
-            "header      header"
-            "bpms        bpms"
-            "soundbank   shape"
-            "controls    controls"
-            "dotsChooser dotsChooser"
-            "sheetToggle sheetToggle"
-            "sheet       sheet";
+            "header            header"
+            "bpms              bpms"
+            "soundbank         shape"
+            "controls          controls"
+            "dotsChooser       dotsChooser"
+            "secondaryControls secondaryControls"
+            "sheetToggle       sheetToggle"
+            "sheet             sheet";
     }
     #bpms {
         --border-width: 3px;

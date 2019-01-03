@@ -1,5 +1,5 @@
 <template>
-    <div id="soundbank">
+    <div class="soundbank">
         <table cellpadding="0" cellspacing="0">
             <tr>
                 <th colspan="100%" class="bank-title">
@@ -150,8 +150,7 @@ export default {
 .no-pointer {
     cursor: default;
 }
-#soundbank {
-    grid-area: soundbank;
+.soundbank {
     text-align: center;
     table {
         border: 1px solid var(--light-grey);

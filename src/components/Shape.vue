@@ -1,5 +1,5 @@
 <template>
-    <div id="shape">
+    <div class="shape">
         <svg id="svg" width="100%" height="100%">
             <g class="lines">
                 <line
@@ -11,6 +11,7 @@
                     :y2="line.y2"
                     stroke="black"
                     stroke-width="10"
+                    class="line animated fadeIn slow"
                 />
             </g>
             <g class="dots">
@@ -21,7 +22,7 @@
                         :cy="dot.y"
                         :data-dot="idx"
                         :r="r"
-                        class="dot"
+                        class="dot animated"
                         :class="{
                             active: idx === state.dotActive,
                         }"
@@ -29,6 +30,7 @@
                         @dragover="dragover"
                         @drop="click($event, idx)"
                     ></circle>
+                    <!-- <text :x="dot.x - 5" :y="dot.y + 5">{{ idx + 1 }}</text> -->
                     <image
                         :href="dot.image"
                         :set="(factor = 0.8)"
@@ -51,6 +53,7 @@ import { store } from '../store'
 import Tone from 'tone'
 import Shake from 'shake.js'
 import Vue from 'vue'
+import { TweenMax } from 'gsap/TweenMax'
 
 export default {
     name: 'Shape',
@@ -66,8 +69,7 @@ export default {
 
     watch: {
         'state.dot': function(newDot, oldDot) {
-            const diff = newDot - oldDot
-            this.reset(diff)
+            this.reset(newDot, oldDot)
             this.update()
         },
     },
@@ -99,7 +101,7 @@ export default {
                 this.$root.$emit('dotstep', { idx, note, time })
             }, '4n').start(0)
 
-            this.update()
+            this.update(false)
 
             this.$root.$on('custom-resize', this.resize)
 
@@ -124,7 +126,6 @@ export default {
         },
 
         dotChanged(dot) {
-            console.log('shape dotchange', dot)
             Vue.set(this.dots[dot.idx], 'image', dot.src)
             Vue.set(this.dots[dot.idx], 'sample', dot.sample)
         },
@@ -134,8 +135,8 @@ export default {
             // this.update()
         },
 
-        reset(diff) {
-            console.log({ diff })
+        reset(newDot, oldDot) {
+            const diff = newDot - oldDot
             // prettier-ignore
             const nlines = this.state.dot === 4 || this.state.dot === 3 ? this.state.dot : 1
             if (diff < 0) {
@@ -144,12 +145,34 @@ export default {
                 }
                 this.lines = this.lines.slice(0, nlines)
             } else {
-                for (let i = 0; i < diff; i++) {
+                const createNewDotFrom = idx => {
                     this.dots.push({
-                        x: 0,
-                        y: 0,
+                        x: this.dots[idx].x,
+                        y: this.dots[idx].y,
                         image: '',
                     })
+                }
+                const createNewLineFrom = (idx1, idx2) => {
+                    this.lines.push({
+                        x1: this.dots[idx1].x,
+                        y1: this.dots[idx1].y,
+                        x2: this.dots[idx2].x,
+                        y2: this.dots[idx2].y,
+                    })
+                }
+                if (oldDot === 3 && newDot === 4) {
+                    createNewDotFrom(2)
+                    createNewLineFrom(3, 0)
+                } else if (oldDot === 2 && newDot == 3) {
+                    createNewDotFrom(1)
+                    createNewLineFrom(2, 1)
+                    createNewLineFrom(2, 0)
+                } else if (oldDot === 2 && newDot == 4) {
+                    createNewDotFrom(1)
+                    createNewDotFrom(1)
+                    createNewLineFrom(1, 2)
+                    createNewLineFrom(2, 3)
+                    createNewLineFrom(3, 0)
                 }
             }
         },
@@ -163,21 +186,20 @@ export default {
 
         dotStepped({ idx, note, time }) {
             console.log(idx, note, time)
-            // snap version
-            // if (!this.dots[idx]) return
-            // this.dots[idx].animate(
-            //     { r: this.r * 1.5 },
-            //     80,
-            //     window.mina.easinout,
-            //     () => {
-            //         this.dots[idx].animate({ r: this.r }, 80)
-            //     }
-            // )
+            const r = this.r
+            const dot = this.$el.querySelectorAll('.dot')[idx]
+            const animationSpeed = 0.08
+            TweenMax.to(dot, animationSpeed, {
+                attr: { r: r * 1.5 },
+                onComplete: () => {
+                    TweenMax.to(dot, animationSpeed, { attr: { r } })
+                },
+            })
             if (note.bank === '' || note.sample == '') return
             this.state.players[note.bank].get(note.sample).start(time)
         },
 
-        update() {
+        update(animate = true) {
             const w = this.$el.clientWidth
             const h = this.$el.clientHeight
             const { r } = this
@@ -190,26 +212,50 @@ export default {
             const y2 = h - padding - r
             const y3 = y2 - Math.sqrt(rb ** 2 - (rb / 2) ** 2)
 
-            const updateDot = (idx, x, y) => {
-                Vue.set(this.dots[idx], 'x', x)
-                Vue.set(this.dots[idx], 'y', y)
-                // this.dots.splice(idx, 1, { x, y })
+            const animationSpeed = 0.8
+
+            const updateDot = (idx, x, y, animate = true) => {
+                if (!animate) {
+                    Vue.set(this.dots[idx], 'x', x)
+                    Vue.set(this.dots[idx], 'y', y)
+                } else {
+                    TweenMax.to(this.dots[idx], animationSpeed, { x, y })
+                }
             }
             const updateLine = (idx, x1, y1, x2, y2) => {
-                this.lines.splice(idx, 1, { x1, y1, x2, y2 })
+                if (!this.lines[idx]) {
+                    this.lines.splice(idx, 1, { x1, y1, x2, y2 })
+                }
+                if (!animate) {
+                    Vue.set(this.lines[idx], 'x1', x1)
+                    Vue.set(this.lines[idx], 'y1', y1)
+                    Vue.set(this.lines[idx], 'x2', x2)
+                    Vue.set(this.lines[idx], 'y2', y2)
+                } else {
+                    // Vue.set(this.lines[idx], 'x1', x1)
+                    // Vue.set(this.lines[idx], 'y1', y1)
+                    // Vue.set(this.lines[idx], 'x2', x2)
+                    // Vue.set(this.lines[idx], 'y2', y2)
+                    TweenMax.to(this.lines[idx], animationSpeed, {
+                        x1,
+                        y1,
+                        x2,
+                        y2,
+                    })
+                }
             }
 
             switch (this.state.dot) {
                 case 2:
-                    updateDot(0, x3, y1)
-                    updateDot(1, x3, y2)
+                    updateDot(0, x3, y1, animate)
+                    updateDot(1, x3, y2, animate)
                     updateLine(0, x3, y1, x3, y2)
                     break
 
                 case 3:
-                    updateDot(0, x3, y3)
-                    updateDot(1, x2, y2)
-                    updateDot(2, x1, y2)
+                    updateDot(0, x3, y3, animate)
+                    updateDot(1, x2, y2, animate)
+                    updateDot(2, x1, y2, animate)
                     updateLine(0, x3, y3, x2, y2)
                     updateLine(1, x2, y2, x1, y2)
                     updateLine(2, x1, y2, x3, y3)
@@ -217,12 +263,12 @@ export default {
 
                 case 4:
                 default:
-                    updateDot(0, x1, y1)
-                    updateDot(1, x2, y1)
-                    updateDot(2, x2, y2)
-                    updateDot(3, x1, y2)
-                    updateLine(0, x2, y1, x2, y2)
-                    updateLine(1, x1, y1, x2, y1)
+                    updateDot(0, x1, y1, animate)
+                    updateDot(1, x2, y1, animate)
+                    updateDot(2, x2, y2, animate)
+                    updateDot(3, x1, y2, animate)
+                    updateLine(0, x1, y1, x2, y1)
+                    updateLine(1, x2, y1, x2, y2)
                     updateLine(2, x2, y2, x1, y2)
                     updateLine(3, x1, y2, x1, y1)
                     break
@@ -253,8 +299,11 @@ export default {
 </script>
 
 <style lang="scss">
-#shape {
-    grid-area: shape;
+svg {
+    overflow: visible;
+}
+
+.shape {
     width: 300px;
     height: 300px;
     image:hover {
@@ -264,11 +313,12 @@ export default {
 .dot {
     fill: var(--accent);
     &.active {
-        stroke: var(--dark-grey);
-        stroke-width: 5px;
+        // stroke: var(--dark-grey);
+        // stroke-width: 5px;
     }
     image {
         width: 50px;
     }
+    // opacity: 0;
 }
 </style>
