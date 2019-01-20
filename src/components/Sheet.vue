@@ -136,6 +136,8 @@ export default {
                 register: '',
             })
         }
+
+        this.$root.$on('custom-resize', this.resize)
     },
 
     mounted() {
@@ -271,7 +273,9 @@ export default {
         },
 
         resize() {
-            // TODO:
+            this.lines = []
+            this.labels = []
+            this.init()
         },
 
         distribute(vmin, vmax, steps, idx) {
@@ -299,6 +303,7 @@ export default {
     text-align: center;
     transition: all 0.4s ease;
     width: 100%;
+    // padding: 10px 0;
     svg {
         width: 100%;
     }

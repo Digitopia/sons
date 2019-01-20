@@ -137,7 +137,7 @@ export default {
             'resize',
             debounce(() => {
                 this.$root.$emit('custom-resize')
-            }, 250)
+            }, 100)
         )
     },
 
