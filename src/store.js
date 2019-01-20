@@ -1,18 +1,16 @@
-import soundbanks from './soundbanks'
+import Vue from 'vue'
+import Vuex from 'vuex'
 
-const defaultBankId = 'aula'
+Vue.use(Vuex)
 
-export const store = {
-    state: {
-        bank: soundbanks.find(bank => bank.id === defaultBankId),
-        banks: soundbanks,
-        sampleActive: null,
-        bpm: 60,
-        dot: 4,
-        dotActive: -1,
-        dots: [],
-        players: {},
-        playing: false,
-        showSheet: true,
-    },
-}
+export default new Vuex.Store({
+  state: {
+
+  },
+  mutations: {
+
+  },
+  actions: {
+
+  }
+})

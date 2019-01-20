@@ -23,7 +23,8 @@
     "shake.js": "^1.2.2",
     "tone": "^0.12.80",
     "vue": "^2.5.21",
-    "vue-holderjs": "^1.0.2"
+    "vue-holderjs": "^1.0.2",
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.2.0",

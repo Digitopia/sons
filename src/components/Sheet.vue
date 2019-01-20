@@ -45,18 +45,30 @@
             </g>
 
             <g v-for="(dot, idx) in dots" :key="`dot-${idx}`" class="dots">
-                <circle
+                <!-- simple circle -->
+                <!-- <circle
                     :cx="dot.x"
                     :cy="dot.y"
                     :r="r"
                     :class="{ inactive: dot.image === '' }"
                     class="dot"
-                ></circle>
+                ></circle> -->
+
+                <QuarterRest v-if="dot.image === ''" :x="dot.x" :y="dot.y" />
+
+                <QuarterNote
+                    v-else
+                    :x="dot.x - 21"
+                    :y="dot.y - 60"
+                    :disabled="dot.image === ''"
+                    class="dot"
+                />
+
                 <image
                     :href="dot.image"
                     :set="(factor = 0.8)"
-                    :x="dot.x - r * factor"
-                    :y="dot.y - r * factor"
+                    :x="dot.x - r * factor + 2"
+                    :y="dot.y - r * factor + 2.5"
                     :width="r * 2 * factor"
                 />
             </g>
@@ -68,9 +80,16 @@
 import Vue from 'vue'
 import { store } from '../store'
 import { TweenMax } from 'gsap/TweenMax'
+import QuarterNote from '@/components/QuarterNote'
+import QuarterRest from '@/components/QuarterRest'
 
 export default {
     name: 'Sheet',
+
+    components: {
+        QuarterNote,
+        QuarterRest,
+    },
 
     props: {
         numerator: {
