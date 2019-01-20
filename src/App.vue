@@ -169,7 +169,7 @@ body {
     margin: 0 auto;
     font-family: 'Lato', sans-serif;
     height: 100vh;
-    background: rgb(248, 249, 250);
+    background: var(--bg);
 }
 
 #app {

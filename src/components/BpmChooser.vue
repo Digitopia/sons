@@ -1,10 +1,14 @@
 <template>
     <div class="bpms" :class="orientation">
         <div
-            v-for="option in options"
+            v-for="(option, index) in options"
             :key="option"
-            class="bpm no-select"
-            :class="{ active: option === bpm }"
+            class="bpm"
+            :class="{
+                active: option === bpm,
+                'prev-active': index === optionActiveIdx - 1,
+                'next-active': index === optionActiveIdx + 1,
+            }"
             @click.prevent.stop="change(option)"
             @touchstart.prevent.stop="change(option)"
         >
@@ -34,6 +38,12 @@ export default {
         }
     },
 
+    computed: {
+        optionActiveIdx() {
+            return this.options.findIndex(bpm => bpm === this.bpm)
+        },
+    },
+
     mounted() {
         this.change(this.bpm)
         window.addEventListener('resize', this.resize)
@@ -44,12 +54,6 @@ export default {
         change(bpm) {
             this.bpm = bpm
             Tone.Transport.bpm.value = this.bpm
-            // document.querySelectorAll('#bpms div').forEach(bpmDiv => {
-            //     bpmDiv.style.borderBottom = '';
-            // });
-            // document.querySelector(
-            //     '#bpms .active'
-            // ).previousSibling.style.borderBottom = 'none';
         },
 
         resize() {
@@ -64,6 +68,8 @@ export default {
 .bpms {
     --border-width: 6px;
     --border: var(--border-width) solid black;
+    --border-bg: 1px solid var(--white);
+    --border-sep: 1px dashed var(--light-grey);
     --bpm-side: 3em;
     div {
         text-align: center;
@@ -73,7 +79,6 @@ export default {
     }
     .bpm {
         box-sizing: border-box;
-        // --bpm-side: 44px;
         width: var(--bpm-side);
         height: var(--bpm-side);
         display: grid;
@@ -81,8 +86,8 @@ export default {
         font-size: 1em;
     }
     &.vertical {
-        div {
-            border-bottom: 1px dashed var(--light-grey);
+        .bpm {
+            border-bottom: var(--border-sep);
             border-left: var(--border);
             border-right: var(--border);
             &:first-child {
@@ -95,13 +100,19 @@ export default {
                 border: var(--border-width) solid var(--accent) !important;
                 font-weight: bold;
             }
+            &.prev-active {
+                border-bottom: var(--border-bg);
+            }
+            &.next-active {
+                border-top: var(--border-bg);
+            }
         }
     }
     &.horizontal {
         display: flex;
-        div {
+        .bpm {
             border: none;
-            border-right: 1px dashed var(--light-grey);
+            border-right: var(--border-sep);
             border-top: var(--border);
             border-bottom: var(--border);
             &:first-child {
@@ -113,6 +124,9 @@ export default {
             &.active {
                 border: var(--border-width) solid var(--accent) !important;
                 font-weight: bold;
+            }
+            &.prev-active {
+                border-right: none;
             }
         }
     }
