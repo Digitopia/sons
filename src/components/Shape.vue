@@ -22,8 +22,8 @@
                         class="dot animated"
                         :class="{ active: idx === dotActive }"
                         @click.prevent.stop="click(idx)"
-                        @dragover="dragover"
-                        @drop="click($event, idx)"
+                        @dragover.prevent=""
+                        @drop="click(idx)"
                     ></circle>
 
                     <!-- Label dots for debug purposes -->
@@ -35,10 +35,10 @@
                         :x="dot.x - r * factor"
                         :y="dot.y - r * factor"
                         :width="r * 2 * factor"
-                        @dragover="dragover"
-                        @drop="click($event, idx)"
-                        @click="click($event, idx)"
-                        @touchstart="click($event, idx)"
+                        @dragover.prevent=""
+                        @drop="click(idx)"
+                        @click="click(idx)"
+                        @touchstart="click(idx)"
                     />
                 </g>
             </g>

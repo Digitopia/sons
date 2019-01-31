@@ -19,7 +19,7 @@ const store = new Vuex.Store({
         notes: [],
         players: {},
         playing: false,
-        showSheet: false,
+        showSheet: true,
         isPwa: false,
     },
 
@@ -27,8 +27,6 @@ const store = new Vuex.Store({
         bank: state => {
             return state.banks.find(bank => bank.id === state.bankActive)
         },
-
-        bankId: state => bankId(state),
     },
 
     mutations: {
@@ -56,15 +54,19 @@ const store = new Vuex.Store({
             state.notes[idx] = note
         },
 
+        clearNotes(state) {
+            state.notes.forEach(note => {
+                note.sample = ''
+                note.bank = ''
+            })
+        },
+
         setIsPwa(state, val) {
             state.isPwa = val
         },
 
-        changeBank(state, dir) {
-            const idx = bankId(state)
-            if (idx + dir >= state.banks.length || idx + dir < 0) return
-            const bank = state.banks[idx + dir]
-            this.loadBank(bank.id)
+        changeBankActive(state, bankActive) {
+            state.bankActive = bankActive
         },
 
         toggleSheet(state) {
@@ -92,11 +94,6 @@ const store = new Vuex.Store({
         },
     },
 })
-
-// Putting this getter outside, since vue doesn't allow for mutations to access getters
-function bankId(state) {
-    return state.banks.findIndex(bank => bank.id === store.getters.bank.id)
-}
 
 export default store
 

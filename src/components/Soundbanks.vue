@@ -77,11 +77,11 @@ export default {
         ...mapGetters(['bank']),
 
         firstBank() {
-            return this.bankId === 0
+            return this.bank.id === this.banks[0].id
         },
 
         lastBank() {
-            return this.bankId === this.banks.length - 1
+            return this.bank.id === this.banks[this.banks.length - 1].id
         },
     },
 
@@ -90,7 +90,7 @@ export default {
     },
 
     methods: {
-        ...mapMutations(['loadBank', 'changeBank', 'setSampleActive']),
+        ...mapMutations(['loadBank', 'changeBankActive', 'setSampleActive']),
 
         getSounds(register, bankId) {
             const bank = this.banks.find(bank => bank.id === bankId)
@@ -100,7 +100,8 @@ export default {
         change(dir) {
             const idx = this.banks.findIndex(bank => bank.id === this.bank.id)
             if (idx + dir >= this.banks.length || idx + dir < 0) return
-            this.changeBank(idx)
+            this.changeBankActive(this.banks[idx + dir].id)
+            this.loadBank(this.bank.id)
         },
 
         drag(evt, sound) {

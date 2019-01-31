@@ -49,7 +49,7 @@
                 enter-active-class="animated bounceInDown"
                 leave-active-class="animated bounceOutUp"
             >
-                <!-- <Sheet v-show="showSheet" id="sheet" /> -->
+                <Sheet v-show="showSheet" id="sheet" />
             </Transition>
         </div>
     </Transition>
@@ -146,7 +146,7 @@ export default {
         ]),
 
         trash() {
-            this.notes.map(() => NoteFactory())
+            this.$store.commit('clearNotes')
             this.$root.$emit('dotsclear')
         },
 
