@@ -1,20 +1,20 @@
 <template>
     <div class="controls">
-        <div v-if="!state.pwa" class="control fullscreen">
-            <FontAwesomeIcon icon="expand" @click="toggleFullscreen" />
+        <div v-if="isPwa" class="control fullscreen">
+            <FontAwesomeIcon icon="expand" @click="toggleFullscreen()" />
             <span>FULLSCREEN</span>
         </div>
         <div v-else></div>
         <div class="control">
             <FontAwesomeIcon
                 class="play"
-                :icon="['far', state.playing ? 'stop-circle' : 'play-circle']"
-                @click="state.playing = !state.playing"
+                :icon="['far', playing ? 'stop-circle' : 'play-circle']"
+                @click="$store.commit('togglePlaying')"
             />
-            <span>{{ state.playing ? 'STOP' : 'PLAY' }}</span>
+            <span>{{ playing ? 'STOP' : 'PLAY' }}</span>
         </div>
         <div class="control">
-            <FontAwesomeIcon :icon="['far', 'dot-circle']" @click="record" />
+            <FontAwesomeIcon :icon="['far', 'dot-circle']" @click="record()" />
             <span
                 :class="{ 'recording animated flash infinite slow': recording }"
                 >REC</span
@@ -27,11 +27,11 @@
 
 <script>
 import Vue from 'vue'
+import { mapState, mapMutations } from 'vuex'
 
 import screenfull from 'screenfull'
 import Tone from 'tone'
 import FileSaver from 'file-saver'
-import { store } from '@/store'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
@@ -64,14 +64,17 @@ export default {
 
     data() {
         return {
-            state: store.state,
             recording: false,
         }
     },
 
+    computed: {
+        ...mapState(['playing', 'dotActive', 'isPwa']),
+    },
+
     watch: {
-        'state.playing': function() {
-            if (this.state.playing) this.play()
+        playing: function() {
+            if (this.playing) this.play()
             else this.stop()
         },
     },
@@ -81,6 +84,8 @@ export default {
     },
 
     methods: {
+        ...mapMutations(['togglePlaying', 'setDotActive']),
+
         play() {
             if (Tone.context.state === 'suspended') Tone.context.resume()
             Tone.Transport.position = '0:0:0'
@@ -89,11 +94,11 @@ export default {
 
         stop() {
             Tone.Transport.stop()
-            this.state.dotActive = -1 // since we're using Tone.Loop instead of Tone.Sequenece e. g.
+            this.setDotActive(-1)
         },
 
         record() {
-            if (!this.state.playing) this.state.playing = true
+            if (!this.playing) this.setPlaying('true')
             this.recording = !this.recording
             if (this.recording) {
                 this.recorder.record()
@@ -102,7 +107,7 @@ export default {
                 this.recorder.exportWAV(blob => {
                     FileSaver.saveAs(blob, 'Gravação Caça Sons.wav')
                 })
-                this.state.playing = false
+                this.setPlaying(false)
             }
         },
 

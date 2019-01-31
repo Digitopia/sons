@@ -7,12 +7,5 @@ Vue.config.productionTip = false
 
 new Vue({
     store,
-    render: h => h(App)
+    render: h => h(App),
 }).$mount('#app')
-
-// Prevent context menu on mobile on long press
-window.oncontextmenu = function(evt) {
-    evt.preventDefault()
-    evt.stopPropagation()
-    return false
-}

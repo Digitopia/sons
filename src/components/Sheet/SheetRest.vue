@@ -10,10 +10,6 @@
     </svg>
 </template>
 
-<script>
-export default {}
-</script>
-
 <style lang="scss">
 .quarter-rest {
     path {

@@ -1,5 +1,5 @@
 <template>
-    <div class="bpms" :class="orientation">
+    <div class="bpms">
         <div
             v-for="(option, index) in options"
             :key="option"
@@ -19,26 +19,20 @@
 
 <script>
 import Tone from 'tone'
+import { mapState, mapMutations } from 'vuex'
 
 export default {
     name: 'BpmChooser',
 
-    props: {
-        default: {
-            type: Number,
-            default: 60,
-        },
-    },
-
     data() {
         return {
             options: [44, 52, 60, 80, 100, 120, 140],
-            bpm: this.default,
-            orientation: 'vertical',
         }
     },
 
     computed: {
+        ...mapState(['bpm']),
+
         optionActiveIdx() {
             return this.options.findIndex(bpm => bpm === this.bpm)
         },
@@ -46,19 +40,14 @@ export default {
 
     mounted() {
         this.change(this.bpm)
-        window.addEventListener('resize', this.resize)
-        this.resize()
     },
 
     methods: {
-        change(bpm) {
-            this.bpm = bpm
-            Tone.Transport.bpm.value = this.bpm
-        },
+        ...mapMutations(['setBpm']),
 
-        resize() {
-            this.orientation =
-                window.innerWidth >= 768 ? 'vertical' : 'horizontal'
+        change(bpm) {
+            this.setBpm(bpm)
+            Tone.Transport.bpm.value = this.bpm
         },
     },
 }
@@ -85,7 +74,7 @@ export default {
         align-items: center;
         font-size: 1em;
     }
-    &.vertical {
+    @media (min-width: 768px) {
         .bpm {
             border-bottom: var(--border-sep);
             border-left: var(--border);
@@ -108,7 +97,7 @@ export default {
             }
         }
     }
-    &.horizontal {
+    @media (max-width: 768px) {
         display: flex;
         .bpm {
             border: none;

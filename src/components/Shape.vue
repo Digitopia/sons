@@ -1,14 +1,11 @@
 <template>
-    <div class="shape">
+    <div class="shape" @shake="shaked">
         <svg id="svg" width="100%" height="100%">
             <g class="lines">
                 <line
                     v-for="(line, idx) in lines"
                     :key="idx"
-                    :x1="line.x1"
-                    :x2="line.x2"
-                    :y1="line.y1"
-                    :y2="line.y2"
+                    v-bind="line"
                     stroke="black"
                     stroke-width="10"
                     class="line animated fadeIn slow"
@@ -23,14 +20,15 @@
                         :data-dot="idx"
                         :r="r"
                         class="dot animated"
-                        :class="{
-                            active: idx === state.dotActive,
-                        }"
-                        @click="click($event, idx)"
+                        :class="{ active: idx === dotActive }"
+                        @click.prevent.stop="click(idx)"
                         @dragover="dragover"
                         @drop="click($event, idx)"
                     ></circle>
+
+                    <!-- Label dots for debug purposes -->
                     <!-- <text :x="dot.x - 5" :y="dot.y + 5">{{ idx + 1 }}</text> -->
+
                     <image
                         :href="dot.image"
                         :set="(factor = 0.8)"
@@ -49,33 +47,40 @@
 </template>
 
 <script>
-import { store } from '../store'
 import Tone from 'tone'
 import Shake from 'shake.js'
 import Vue from 'vue'
+import { mapState, mapMutations, mapGetters } from 'vuex'
 import { TweenMax } from 'gsap/TweenMax'
+
+import { NoteFactory } from '@/store'
 
 export default {
     name: 'Shape',
 
     data() {
         return {
-            state: store.state,
             dots: [],
             lines: [],
             r: 22,
         }
     },
 
+    computed: {
+        ...mapState(['dot', 'dotActive', 'players', 'sampleActive', 'playing']),
+
+        ...mapGetters(['bank']),
+    },
+
     watch: {
-        'state.dot': function(newDot, oldDot) {
+        dot: function(newDot, oldDot) {
             this.reset(newDot, oldDot)
             this.update()
         },
     },
 
     created() {
-        for (let i = 0; i < this.state.dot; i++) {
+        for (let i = 0; i < this.dot; i++) {
             this.dots.push({
                 x: 0,
                 y: 0,
@@ -86,59 +91,46 @@ export default {
 
     mounted() {
         this.init()
+
+        // TODO: will it work with @ notation?
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotstep', this.dotStepped)
         this.$root.$on('dotsclear', this.clear)
     },
 
     methods: {
+        ...mapMutations(['setDotActive', 'setNote']),
+
         init() {
             this.loop = new Tone.Loop(time => {
-                this.state.dotActive =
-                    (this.state.dotActive + 1) % this.state.dot
-                const idx = this.state.dotActive
-                const note = this.state.dots[idx]
+                this.setDotActive((this.dotActive + 1) % this.dot)
+                const idx = this.dotActive
+                const note = this.$store.state.notes[idx]
                 this.$root.$emit('dotstep', { idx, note, time })
             }, '4n').start(0)
 
             this.update(false)
-
-            this.$root.$on('custom-resize', this.resize)
-
             this.initShake()
         },
 
         initShake() {
             new Shake({ threshold: 10, timeout: 1000 }).start()
-
-            window.addEventListener(
-                'shake',
-                () => {
-                    this.$root.$emit('shaked')
-                },
-                false
-            )
-
-            this.$root.$on('shaked', () => {
-                this.reset()
-                this.state.playing = false
-            })
         },
 
-        dotChanged(dot) {
-            Vue.set(this.dots[dot.idx], 'image', dot.src)
-            Vue.set(this.dots[dot.idx], 'sample', dot.sample)
+        shaked() {
+            console.log('i got shaked')
+            this.reset()
         },
 
-        resize() {
-            // TODO:
-            // this.update()
+        dotChanged({ idx, src, sample }) {
+            Vue.set(this.dots[idx], 'image', src)
+            Vue.set(this.dots[idx], 'sample', sample)
         },
 
         reset(newDot, oldDot) {
             const diff = newDot - oldDot
             // prettier-ignore
-            const nlines = this.state.dot === 4 || this.state.dot === 3 ? this.state.dot : 1
+            const nlines = this.dot === 4 || this.dot === 3 ? this.dot : 1
             if (diff < 0) {
                 for (let i = 0; i < Math.abs(diff); i++) {
                     this.dots.pop()
@@ -161,7 +153,7 @@ export default {
                     })
                 }
                 if (oldDot === 3 && newDot === 4) {
-                    createNewDotFrom(2)
+                    createNewDotFrom(0)
                     createNewLineFrom(3, 0)
                 } else if (oldDot === 2 && newDot == 3) {
                     createNewDotFrom(1)
@@ -185,9 +177,10 @@ export default {
         },
 
         dotStepped({ idx, note, time }) {
-            console.log(idx, note, time)
+            console.log('shape dotstepped', idx, note, time)
             const r = this.r
             const dot = this.$el.querySelectorAll('.dot')[idx]
+            console.log('dot is', dot, r)
             const animationSpeed = 0.08
             TweenMax.to(dot, animationSpeed, {
                 attr: { r: r * 1.5 },
@@ -195,8 +188,10 @@ export default {
                     TweenMax.to(dot, animationSpeed, { attr: { r } })
                 },
             })
-            if (note.bank === '' || note.sample == '') return
-            this.state.players[note.bank].get(note.sample).start(time)
+            console.log('Note is', note)
+            if (note.sample === '') return
+            console.log(note)
+            this.players[note.bank].get(note.sample).start(time)
         },
 
         update(animate = true) {
@@ -232,10 +227,6 @@ export default {
                     Vue.set(this.lines[idx], 'x2', x2)
                     Vue.set(this.lines[idx], 'y2', y2)
                 } else {
-                    // Vue.set(this.lines[idx], 'x1', x1)
-                    // Vue.set(this.lines[idx], 'y1', y1)
-                    // Vue.set(this.lines[idx], 'x2', x2)
-                    // Vue.set(this.lines[idx], 'y2', y2)
                     TweenMax.to(this.lines[idx], animationSpeed, {
                         x1,
                         y1,
@@ -245,7 +236,7 @@ export default {
                 }
             }
 
-            switch (this.state.dot) {
+            switch (this.dot) {
                 case 2:
                     updateDot(0, x3, y1, animate)
                     updateDot(1, x3, y2, animate)
@@ -275,24 +266,19 @@ export default {
             }
         },
 
-        click(evt, idx) {
-            if (evt.preventDefault) evt.preventDefault()
-            if (evt.stopPropagation) evt.stopPropagation()
-
-            const dot = {
-                bank: this.state.bank.id,
-                sample: this.state.sampleActive.sample,
-            }
-            this.state.dots[idx] = dot
+        click(idx) {
+            if (!this.sampleActive) return
+            const note = NoteFactory(this.bank.id, this.sampleActive.sample)
+            this.setNote({ idx, note })
             this.$root.$emit('dotchange', {
                 idx,
-                ...dot,
+                ...note,
                 src: document.querySelector('img.active').getAttribute('src'),
             })
         },
 
-        dragover(evt) {
-            evt.preventDefault()
+        dragover(e) {
+            e.preventDefault()
         },
     },
 }
@@ -319,6 +305,5 @@ svg {
     image {
         width: 50px;
     }
-    // opacity: 0;
 }
 </style>

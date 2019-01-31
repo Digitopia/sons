@@ -26,10 +26,7 @@
                     v-for="(line, idx) in lines"
                     :key="`line-${idx}`"
                     class="sheet-line"
-                    :x1="line.x1"
-                    :y1="line.y1"
-                    :x2="line.x2"
-                    :y2="line.y2"
+                    v-bind="line"
                 />
             </g>
 
@@ -44,66 +41,32 @@
                 </text>
             </g>
 
-            <g v-for="(dot, idx) in dots" :key="`dot-${idx}`" class="dots">
-                <!-- simple circle -->
-                <!-- <circle
-                    :cx="dot.x"
-                    :cy="dot.y"
-                    :r="r"
-                    :class="{ inactive: dot.image === '' }"
-                    class="dot"
-                ></circle> -->
-
-                <QuarterRest v-if="dot.image === ''" :x="dot.x" :y="dot.y" />
-
-                <QuarterNote
-                    v-else
-                    :x="dot.x - 21"
-                    :y="dot.y - 60"
-                    :disabled="dot.image === ''"
-                    class="dot"
-                />
-
-                <image
-                    :href="dot.image"
-                    :set="(factor = 0.8)"
-                    :x="dot.x - r * factor + 2"
-                    :y="dot.y - r * factor + 2.5"
-                    :width="r * 2 * factor"
-                />
-            </g>
+            <!-- Notes and rests go here -->
+            <slot></slot>
         </svg>
     </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import { store } from '../store'
+import { mapState } from 'vuex'
 import { TweenMax } from 'gsap/TweenMax'
-import QuarterNote from '@/components/QuarterNote'
-import QuarterRest from '@/components/QuarterRest'
 
 export default {
     name: 'Sheet',
 
-    components: {
-        QuarterNote,
-        QuarterRest,
-    },
-
     props: {
         numerator: {
             type: Number,
-            required: true,
             validator: function(val) {
                 return [2, 3, 4].indexOf(val) !== -1
             },
+            default: 4,
         },
     },
 
     data() {
         return {
-            state: store.state,
             r: 10,
             px: 30, // padding x
             py: 50, // padding y
@@ -124,6 +87,8 @@ export default {
     },
 
     computed: {
+        ...mapState(['dot', 'banks']),
+
         numChar: function() {
             switch (this.num.val) {
                 case 2:
@@ -138,8 +103,8 @@ export default {
     },
 
     watch: {
-        'state.dot': function(newDot, oldDot) {
-            this.num.val = this.state.dot
+        dot: function(newDot, oldDot) {
+            this.num.val = this.dot
             const diff = newDot - oldDot
             this.reset(diff)
             this.update()
@@ -147,16 +112,11 @@ export default {
     },
 
     created() {
-        for (let i = 0; i < this.state.dot; i++) {
-            this.dots.push({
-                x: 0,
-                y: 0,
-                image: '',
-                register: '',
-            })
+        for (let i = 0; i < this.dot; i++) {
+            this.dots.push(this.dotFactory())
         }
 
-        this.$root.$on('custom-resize', this.resize)
+        this.$root.$on('debouncedresize', this.resize)
     },
 
     mounted() {
@@ -167,6 +127,15 @@ export default {
     },
 
     methods: {
+        dotFactory() {
+            return {
+                x: 0,
+                y: 0,
+                image: '',
+                register: '',
+            }
+        },
+
         init() {
             const w = this.$el.clientWidth
             const h = this.$el.clientHeight
@@ -217,8 +186,8 @@ export default {
             const xmin = this.px + padDot
             const xmax = this.$el.clientWidth - this.px
 
-            for (let i = 0; i < this.state.dot; i++) {
-                const x = this.distribute(xmin, xmax, this.state.dot, i)
+            for (let i = 0; i < this.dot; i++) {
+                const x = this.distribute(xmin, xmax, this.dot, i)
                 const y = this.getRegisterY(this.dots[i])
                 this.updateDot(i, x, y)
             }
@@ -245,7 +214,7 @@ export default {
 
         dotChanged(evt) {
             // update height position
-            const bank = this.state.banks.find(bank => bank.id === evt.bank)
+            const bank = this.banks.find(bank => bank.id === evt.bank)
             const register = bank.sounds.find(
                 sound => sound.sample === evt.sample
             ).register
@@ -258,8 +227,10 @@ export default {
         },
 
         dotStepped({ idx }) {
+            console.log('sheet idx', idx)
             const r = this.r
             const dot = this.$el.querySelectorAll('.dot')[idx]
+            console.log('dot un sheet', dot)
             const animationSpeed = 0.08
             TweenMax.to(dot, animationSpeed, {
                 attr: { r: r * 1.5 },
@@ -316,7 +287,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import '../styles/bravura-regular';
+@import '../../assets/styles/bravura-regular';
 
 .sheetContainer {
     text-align: center;

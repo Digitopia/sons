@@ -1,20 +1,20 @@
 <template>
     <Transition appear appear-active-class="animated fadeIn slow">
-        <div v-cloak id="app" class="no-select">
+        <div v-cloak id="app" class="no-select" @resize="resize">
             <h2 class="header">Caça Sons</h2>
 
             <Soundbanks id="soundbanks" />
             <Shape id="shape" />
-            <BpmChooser id="bpms" :default="80" />
+            <BpmChooser id="bpms" />
 
             <div id="dotsChooser">
-                <span v-for="(dot, idx) in dots" :key="dot">
+                <span v-for="(d, idx) in dots" :key="idx">
                     <span
                         class="possibleDot"
-                        :class="{ active: dot === state.dot }"
-                        @click.prevent.stop="state.dot = dot"
-                        @touchstart.prevent.stop="state.dot = dot"
-                        >{{ dot }}</span
+                        :class="{ active: d === dot }"
+                        @click.prevent.stop="changeDot(d)"
+                        @touchstart.prevent.stop="changeDot(d)"
+                        >{{ d }}</span
                     >
                     <span v-if="idx !== dots.length - 1">&nbsp;/&nbsp;</span>
                 </span>
@@ -26,14 +26,14 @@
                 <FontAwesomeIcon icon="trash" class="trash" @click="trash" />
             </div>
 
-            <div id="sheetToggle" @click="toggleSheet">
+            <div id="sheetToggle" @click="toggleSheet()">
                 <Transition
                     enter-active-class="animated fadeIn faster"
                     leave-active-class="animated fadeOut faster"
                     mode="out-in"
                 >
                     <FontAwesomeIcon
-                        v-if="!state.showSheet"
+                        v-if="!showSheet"
                         key="plus"
                         icon="plus"
                     ></FontAwesomeIcon>
@@ -49,21 +49,23 @@
                 enter-active-class="animated bounceInDown"
                 leave-active-class="animated bounceOutUp"
             >
-                <Sheet v-show="state.showSheet" id="sheet" :numerator="4" />
+                <!-- <Sheet v-show="showSheet" id="sheet" /> -->
             </Transition>
         </div>
     </Transition>
 </template>
 
 <script>
-import Soundbanks from '@/components/Soundbanks.vue'
-import Shape from '@/components/Shape.vue'
-import BpmChooser from '@/components/BpmChooser.vue'
-import Controls from '@/components/Controls.vue'
-import Sheet from '@/components/Sheet.vue'
+import Soundbanks from '@/components/Soundbanks'
+import Shape from '@/components/Shape'
+import BpmChooser from '@/components/BpmChooser'
+import Controls from '@/components/Controls'
+import Sheet from '@/components/Sheet/Sheet'
 
+import { mapState, mapMutations } from 'vuex'
 import { debounce } from 'lodash'
-import { store } from '@/store'
+
+import { NoteFactory } from '@/store'
 
 export default {
     name: 'App',
@@ -77,87 +79,100 @@ export default {
     },
 
     data() {
-        return {
-            dots: [2, 3, 4],
-            state: store.state,
-        }
+        return {}
+    },
+
+    computed: {
+        ...mapState([
+            'dot',
+            'dots',
+            'notes',
+            'playing',
+            'sampleActive',
+            'pwa',
+            'showSheet',
+        ]),
     },
 
     watch: {
-        'state.dot': function() {
-            const diff = this.state.dot - this.state.dots.length
+        dot: function() {
+            const diff = this.dot - this.notes.length
             if (diff > 0) {
                 // adding dots
-                for (let i = 0; i < diff; i++)
-                    this.state.dots.push({
-                        bank: '',
-                        sample: '',
-                    })
+                for (let i = 0; i < diff; i++) this.notes.push(NoteFactory())
             } else {
                 // removing dots
-                for (let i = 0; i < Math.abs(diff); i++) this.state.dots.pop()
+                for (let i = 0; i < Math.abs(diff); i++) this.notes.pop()
             }
 
             // when would try to play dots not shown in shape
             if (
-                this.state.playing &&
+                this.playing &&
                 diff < 0 &&
-                this.state.dotActive >= this.state.dots.length
+                this.dotActive >= this.notes.length
             ) {
-                this.state.dotActive = -1
+                this.setDotActive(-1)
             }
         },
     },
 
     created() {
-        const params = new URLSearchParams(window.location.search)
-        const utmSource = params.get('utm_source')
-        this.state.pwa = utmSource === 'homescreen'
+        document.addEventListener('keypress', this.keypress)
 
-        for (let i = 0; i < this.state.dot; i++) {
-            this.state.dots.push({
-                bank: '',
-                sample: '',
-            })
+        this.$store.commit(
+            'setIsPwa',
+            new URLSearchParams(window.location.search).get('utm_source') ===
+                'homescreen'
+        )
+
+        // Prevent context menu on mobile on long press
+        window.oncontextmenu = e => {
+            e.preventDefault()
+            e.stopPropagation()
+            return false
         }
 
-        document.addEventListener('keydown', evt => {
-            if (evt.key === ' ') this.state.playing = !this.state.playing
-        })
-    },
-
-    mounted() {
-        document.addEventListener('keypress', e => {
-            if (e.key == 2 || e.key == 3 || e.key == 4) {
-                this.state.dot = Number.parseInt(e.key)
-                // store.changeDot(Number.parseInt(e.key))
-            }
-        })
-        window.addEventListener(
-            'resize',
-            debounce(() => {
-                this.$root.$emit('custom-resize')
-            }, 100)
-        )
+        for (let i = 0; i < this.dot; i++) {
+            this.notes.push(NoteFactory())
+        }
     },
 
     methods: {
-        toggleSheet() {
-            this.state.showSheet = !this.state.showSheet
-        },
+        ...mapMutations([
+            'changeDot',
+            'togglePlaying',
+            'toggleSheet',
+            'setDotActive',
+        ]),
+
         trash() {
-            this.state.dots.forEach(dot => {
-                dot.bank = ''
-                dot.sample = ''
-            })
+            this.notes.map(() => NoteFactory())
             this.$root.$emit('dotsclear')
+        },
+
+        keypress(e) {
+            switch (e.key) {
+                case ' ':
+                    this.togglePlaying()
+                    break
+                case '2':
+                case '3':
+                case '4':
+                    this.changeDot(Number.parseInt(e.key))
+                    break
+            }
+        },
+
+        resize() {
+            debounce(() => this.$root.$emit('debouncedresize'), 100)
         },
     },
 }
 </script>
 
 <style lang="scss">
-@import 'styles/globals';
+@import 'assets/styles/globals';
+@import 'assets/styles/breakpoints';
 @import '~animate.css';
 
 @import url('https://fonts.googleapis.com/css?family=Lato');
@@ -261,7 +276,4 @@ body {
     grid-area: sheet;
     transition: opacity 1s linear;
 }
-
-// @TODO: this should be able to be at the top for better clarity
-@import 'styles/breakpoints';
 </style>
