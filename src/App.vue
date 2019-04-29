@@ -62,7 +62,7 @@ import BpmChooser from '@/components/BpmChooser'
 import Controls from '@/components/Controls'
 import Sheet from '@/components/Sheet/Sheet'
 
-import { mapState, mapMutations } from 'vuex'
+import { mapState, mapMutations, mapGetters } from 'vuex'
 import { debounce } from 'lodash'
 
 import { NoteFactory } from '@/store'
@@ -92,17 +92,19 @@ export default {
             'isPwa',
             'showSheet',
         ]),
+
+        ...mapGetters(['ndots']),
     },
 
     watch: {
         dot: function() {
-            const diff = this.dot - this.notes.length
+            const diff = this.ndots - this.notes.length
             if (diff > 0) {
                 // adding dots
                 for (let i = 0; i < diff; i++) this.notes.push(NoteFactory())
             } else {
                 // removing dots
-                for (let i = 0; i < Math.abs(diff); i++) this.notes.pop()
+                this.notes.slice(0, this.ndots)
             }
 
             // when would try to play dots not shown in shape
@@ -132,7 +134,8 @@ export default {
         //     return false
         // }
 
-        for (let i = 0; i < this.dot; i++) {
+        console.log('going to create', this.ndots, 'notes')
+        for (let i = 0; i < this.ndots; i++) {
             this.notes.push(NoteFactory())
         }
     },

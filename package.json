@@ -23,6 +23,7 @@
         "screenfull": "^4.0.0",
         "shake.js": "^1.2.2",
         "tone": "^13.4.9",
+        "vexflow": "^1.2.89",
         "vue": "^2.5.22",
         "vue-holderjs": "^1.0.2",
         "vuex": "^3.0.1"

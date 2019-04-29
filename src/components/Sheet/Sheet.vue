@@ -25,6 +25,13 @@
                 class="dot"
             />
 
+            <SheetNote8th
+                :x="dot.x - 10"
+                :y="dot.y - 90"
+                :disabled="dot.image === ''"
+                class="dot"
+            />
+
             <image
                 v-bind="{ 'xlink:href': dot.image }"
                 :set="(factor = 0.8)"
@@ -44,6 +51,7 @@ import { TweenMax } from 'gsap/TweenMax'
 import SheetLayout from './SheetLayout'
 import SheetNote from './SheetNote'
 import SheetRest from './SheetRest'
+import SheetNote8th from './SheetNote8th'
 
 import { mapState, mapGetters } from 'vuex'
 
@@ -51,6 +59,7 @@ export default {
     components: {
         SheetLayout,
         SheetNote,
+        SheetNote8th,
         SheetRest,
     },
 
@@ -145,12 +154,12 @@ export default {
             const r = this.r
             const dot = this.$el.querySelectorAll('.dot')[idx]
             const animationSpeed = 0.08
-            TweenMax.to(dot, animationSpeed, {
-                attr: { r: r * 1.5 },
-                onComplete: () => {
-                    TweenMax.to(dot, animationSpeed, { attr: { r } })
-                },
-            })
+            // TweenMax.to(dot, animationSpeed, {
+            //     attr: { r: r * 1.5 },
+            //     onComplete: () => {
+            //         TweenMax.to(dot, animationSpeed, { attr: { r } })
+            //     },
+            // })
         },
 
         reset(diff) {

@@ -27,6 +27,11 @@ const store = new Vuex.Store({
         bank: state => {
             return state.banks.find(bank => bank.id === state.bankActive)
         },
+
+        ndots: state => {
+            if (state.dot === 2) return 3
+            else return state.dot * 2
+        },
     },
 
     mutations: {

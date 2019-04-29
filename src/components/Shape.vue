@@ -15,10 +15,11 @@
                 <g v-for="(dot, idx) in dots" :key="`dot-${idx}`">
                     <circle
                         :key="idx"
+                        :ref="`dot-${idx}`"
                         :cx="dot.x"
                         :cy="dot.y"
                         :data-dot="idx"
-                        :r="r"
+                        :r="dot.isSmall ? r * 0.75 : r"
                         class="dot animated"
                         :class="{ active: idx === dotActive }"
                         @click.prevent.stop="click(idx)"
@@ -27,11 +28,11 @@
                     ></circle>
 
                     <!-- Label dots for debug purposes -->
-                    <!-- <text :x="dot.x - 5" :y="dot.y + 5">{{ idx + 1 }}</text> -->
+                    <!-- <text :x="dot.x - 5" :y="dot.y + 5">{{ idx }}</text> -->
 
                     <image
                         v-bind="{ 'xlink:href': dot.image }"
-                        :set="(factor = 0.8)"
+                        :set="(factor = dot.isSmall ? 0.6 : 0.8)"
                         :x="dot.x - r * factor"
                         :y="dot.y - r * factor"
                         :width="r * 2 * factor"
@@ -70,7 +71,15 @@ export default {
     computed: {
         ...mapState(['dot', 'dotActive', 'players', 'sampleActive', 'playing']),
 
-        ...mapGetters(['bank']),
+        ...mapGetters(['bank', 'ndots']),
+
+        imageHeight() {
+            return 100
+        },
+
+        imageWidth() {
+            return 100
+        },
     },
 
     watch: {
@@ -81,11 +90,12 @@ export default {
     },
 
     created() {
-        for (let i = 0; i < this.dot; i++) {
+        for (let i = 0; i < this.ndots; i++) {
             this.dots.push({
                 x: 0,
                 y: 0,
                 image: '',
+                isSmall: i % 2 === 1, // if is 'interbeat' (for lack of better term)
             })
         }
     },
@@ -104,11 +114,28 @@ export default {
 
         init() {
             this.loop = new Tone.Loop(time => {
-                this.setDotActive((this.dotActive + 1) % this.dot)
+                const previousActiveDot = this.dotActive
+
+                let idxDotActive
+
+                if (this.dot === 2) {
+                    console.log('this.dot is 2')
+                    if (this.dotActive === 1) {
+                        if (this.previousActiveDot === 0) idxDotActive = 2
+                        else idxDotActive = 0
+                    } else if (this.dotActive === 2) idxDotActive = 1
+                    else idxDotActive = (this.dotActive + 1) % this.ndots
+                } else {
+                    idxDotActive = (this.dotActive + 1) % this.ndots
+                }
+
+                console.log({ idxDotActive })
+                this.setDotActive(idxDotActive)
+                this.previousActiveDot = previousActiveDot
                 const idx = this.dotActive
                 const note = this.$store.state.notes[idx]
                 this.$root.$emit('dotstep', { idx, note, time })
-            }, '4n').start(0)
+            }, '8n').start(0)
 
             this.update(false)
             this.initShake()
@@ -130,42 +157,43 @@ export default {
 
         reset(newDot, oldDot) {
             const diff = newDot - oldDot
-            // prettier-ignore
             const nlines = this.dot === 4 || this.dot === 3 ? this.dot : 1
             if (diff < 0) {
-                for (let i = 0; i < Math.abs(diff); i++) {
-                    this.dots.pop()
-                }
+                const dotsToKeep = newDot == 2 ? 3 : newDot * 2
+                this.dots = this.dots.slice(0, dotsToKeep)
                 this.lines = this.lines.slice(0, nlines)
             } else {
-                const createNewDotFrom = idx => {
-                    this.dots.push({
-                        x: this.dots[idx].x,
-                        y: this.dots[idx].y,
-                        image: '',
+                const createNewDotsFrom = indexes => {
+                    indexes.forEach(idx => {
+                        this.dots.push({
+                            x: this.dots[idx].x,
+                            y: this.dots[idx].y,
+                            image: '',
+                            isSmall: this.dots.length % 2 === 1,
+                        })
                     })
                 }
-                const createNewLineFrom = (idx1, idx2) => {
-                    this.lines.push({
-                        x1: this.dots[idx1].x,
-                        y1: this.dots[idx1].y,
-                        x2: this.dots[idx2].x,
-                        y2: this.dots[idx2].y,
+                const createNewLinesFrom = pairs => {
+                    pairs.forEach(pair => {
+                        const idx1 = pair[0]
+                        const idx2 = pair[1]
+                        this.lines.push({
+                            x1: this.dots[idx1].x,
+                            y1: this.dots[idx1].y,
+                            x2: this.dots[idx2].x,
+                            y2: this.dots[idx2].y,
+                        })
                     })
                 }
                 if (oldDot === 3 && newDot === 4) {
-                    createNewDotFrom(0)
-                    createNewLineFrom(3, 0)
+                    createNewDotsFrom([0, 0])
+                    createNewLinesFrom([[6, 0]])
                 } else if (oldDot === 2 && newDot == 3) {
-                    createNewDotFrom(1)
-                    createNewLineFrom(2, 1)
-                    createNewLineFrom(2, 0)
+                    createNewDotsFrom([2, 2, 1])
+                    createNewLinesFrom([[2, 4], [2, 0]])
                 } else if (oldDot === 2 && newDot == 4) {
-                    createNewDotFrom(1)
-                    createNewDotFrom(1)
-                    createNewLineFrom(1, 2)
-                    createNewLineFrom(2, 3)
-                    createNewLineFrom(3, 0)
+                    createNewDotsFrom([2, 2, 2, 2, 2])
+                    createNewLinesFrom([[2, 4], [4, 6], [6, 2]])
                 }
             }
         },
@@ -178,16 +206,20 @@ export default {
         },
 
         dotStepped({ idx, note, time }) {
+            console.log('dotStepped', idx)
             const r = this.r
-            const dot = this.$el.querySelectorAll('.dot')[idx]
+            const dot = this.$refs[`dot-${idx}`]
             const animationSpeed = 0.08
+            const originalR = this.dots[idx].isSmall ? 0.75 * this.r : this.r
             TweenMax.to(dot, animationSpeed, {
                 attr: { r: r * 1.5 },
                 onComplete: () => {
-                    TweenMax.to(dot, animationSpeed, { attr: { r } })
+                    TweenMax.to(dot, animationSpeed, { attr: { r: originalR } })
                 },
             })
             if (note.sample === '') return
+            if (idx === 0) this.players[note.bank].volume.value = 0
+            else if (idx % 2 === 0) this.players[note.bank].volume.value = -6
             this.players[note.bank].get(note.sample).start(time)
         },
 
@@ -203,6 +235,7 @@ export default {
             const y1 = x1
             const y2 = h - padding - r
             const y3 = y2 - Math.sqrt(rb ** 2 - (rb / 2) ** 2)
+            const y4 = (y2 - y1) / 2 + y1
 
             const animationSpeed = 0.8
 
@@ -236,15 +269,18 @@ export default {
             switch (this.dot) {
                 case 2:
                     updateDot(0, x3, y1, animate)
-                    updateDot(1, x3, y2, animate)
-                    // updateDot(2, (y2 - y1) / 2 + y1, false)
+                    updateDot(2, x3, y2, animate)
+                    updateDot(1, x3, (y2 - y1) / 2 + y1, animate)
                     updateLine(0, x3, y1, x3, y2)
                     break
 
                 case 3:
                     updateDot(0, x3, y3, animate)
-                    updateDot(1, x2, y2, animate)
-                    updateDot(2, x1, y2, animate)
+                    updateDot(1, (x3 + x2) / 2, (y3 + y2) / 2, animate)
+                    updateDot(2, x2, y2, animate)
+                    updateDot(3, x3, y2, animate)
+                    updateDot(4, x1, y2, animate)
+                    updateDot(5, (x1 + x3) / 2, (y3 + y2) / 2, animate)
                     updateLine(0, x3, y3, x2, y2)
                     updateLine(1, x2, y2, x1, y2)
                     updateLine(2, x1, y2, x3, y3)
@@ -253,9 +289,13 @@ export default {
                 case 4:
                 default:
                     updateDot(0, x1, y1, animate)
-                    updateDot(1, x2, y1, animate)
-                    updateDot(2, x2, y2, animate)
-                    updateDot(3, x1, y2, animate)
+                    updateDot(1, x3, y1, animate)
+                    updateDot(2, x2, y1, animate)
+                    updateDot(3, x2, y4, animate)
+                    updateDot(4, x2, y2, animate)
+                    updateDot(5, x3, y2, animate)
+                    updateDot(6, x1, y2, animate)
+                    updateDot(7, x1, y4, animate)
                     updateLine(0, x1, y1, x2, y1)
                     updateLine(1, x2, y1, x2, y2)
                     updateLine(2, x2, y2, x1, y2)
