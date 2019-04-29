@@ -22,21 +22,22 @@
                         class="dot animated"
                         :class="{ active: idx === dotActive }"
                         @click.prevent.stop="click(idx)"
-                        @dragover.prevent=""
-                        @drop="click(idx)"
+                        @dragover.prevent.stop="drag"
+                        @drop.prevent="click(idx)"
                     ></circle>
 
                     <!-- Label dots for debug purposes -->
                     <!-- <text :x="dot.x - 5" :y="dot.y + 5">{{ idx + 1 }}</text> -->
 
                     <image
-                        :href="dot.image"
+                        v-bind="{ 'xlink:href': dot.image }"
                         :set="(factor = 0.8)"
                         :x="dot.x - r * factor"
                         :y="dot.y - r * factor"
                         :width="r * 2 * factor"
-                        @dragover.prevent=""
-                        @drop="click(idx)"
+                        :height="r * 2 * factor"
+                        @dragover.prevent.stop="drag"
+                        @drop.prevent="click(idx)"
                         @click="click(idx)"
                         @touchstart="click(idx)"
                     />
@@ -177,10 +178,8 @@ export default {
         },
 
         dotStepped({ idx, note, time }) {
-            console.log('shape dotstepped', idx, note, time)
             const r = this.r
             const dot = this.$el.querySelectorAll('.dot')[idx]
-            console.log('dot is', dot, r)
             const animationSpeed = 0.08
             TweenMax.to(dot, animationSpeed, {
                 attr: { r: r * 1.5 },
@@ -188,9 +187,7 @@ export default {
                     TweenMax.to(dot, animationSpeed, { attr: { r } })
                 },
             })
-            console.log('Note is', note)
             if (note.sample === '') return
-            console.log(note)
             this.players[note.bank].get(note.sample).start(time)
         },
 
@@ -240,6 +237,7 @@ export default {
                 case 2:
                     updateDot(0, x3, y1, animate)
                     updateDot(1, x3, y2, animate)
+                    // updateDot(2, (y2 - y1) / 2 + y1, false)
                     updateLine(0, x3, y1, x3, y2)
                     break
 
@@ -277,9 +275,7 @@ export default {
             })
         },
 
-        dragover(e) {
-            e.preventDefault()
-        },
+        drag() {},
     },
 }
 </script>
@@ -290,8 +286,8 @@ svg {
 }
 
 .shape {
-    width: 300px;
-    height: 300px;
+    height: 100%;
+    // width: 400px;
     image:hover {
         cursor: pointer; // TODO: this should not be a pointer if there's no activeSample selected
     }

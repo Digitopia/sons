@@ -19,18 +19,19 @@
 
             <SheetNote
                 v-else
-                :x="dot.x - 21"
+                :x="dot.x - 20"
                 :y="dot.y - 60"
                 :disabled="dot.image === ''"
                 class="dot"
             />
 
             <image
-                :href="dot.image"
+                v-bind="{ 'xlink:href': dot.image }"
                 :set="(factor = 0.8)"
                 :x="dot.x - r * factor + 2"
                 :y="dot.y - r * factor + 2.5"
                 :width="r * 2 * factor"
+                :height="r * 2 * factor"
             />
         </g>
     </SheetLayout>
@@ -69,7 +70,6 @@ export default {
 
     watch: {
         dot: function(newDot, oldDot) {
-            console.log('dot changed!')
             const diff = newDot - oldDot
             this.reset(diff)
             this.update()
@@ -129,8 +129,6 @@ export default {
         },
 
         dotChanged(evt) {
-            console.log('Sheet dotChanged')
-            // update height position
             const bank = this.banks.find(bank => bank.id === evt.bank)
             const register = bank.sounds.find(
                 sound => sound.sample === evt.sample
@@ -144,10 +142,8 @@ export default {
         },
 
         dotStepped({ idx }) {
-            console.log('sheet idx', idx)
             const r = this.r
             const dot = this.$el.querySelectorAll('.dot')[idx]
-            console.log('dot un sheet', dot)
             const animationSpeed = 0.08
             TweenMax.to(dot, animationSpeed, {
                 attr: { r: r * 1.5 },

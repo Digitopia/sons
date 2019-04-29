@@ -1,7 +1,7 @@
 <template>
     <Transition appear appear-active-class="animated fadeIn slow">
         <div v-cloak id="app" class="no-select" @resize="resize">
-            <h2 class="header">Caça Sons</h2>
+            <h2 class="header">CAÇA SONS</h2>
 
             <Soundbanks id="soundbanks" />
             <Shape id="shape" />
@@ -89,7 +89,7 @@ export default {
             'notes',
             'playing',
             'sampleActive',
-            'pwa',
+            'isPwa',
             'showSheet',
         ]),
     },
@@ -126,11 +126,11 @@ export default {
         )
 
         // Prevent context menu on mobile on long press
-        window.oncontextmenu = e => {
-            e.preventDefault()
-            e.stopPropagation()
-            return false
-        }
+        // window.oncontextmenu = e => {
+        //     e.preventDefault()
+        //     e.stopPropagation()
+        //     return false
+        // }
 
         for (let i = 0; i < this.dot; i++) {
             this.notes.push(NoteFactory())
@@ -180,7 +180,8 @@ export default {
 html,
 body {
     box-sizing: border-box;
-    max-width: 1366px;
+    max-width: 1000px;
+    height: 100vh;
     margin: 0 auto;
     font-family: 'Lato', sans-serif;
     height: 100vh;
@@ -188,10 +189,11 @@ body {
 }
 
 #app {
+    margin-top: 60px;
     display: grid;
     justify-items: center;
     align-items: center;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 30fr 40fr 30fr;
     grid-gap: 10px;
     grid-template-areas:
         'header      header      header'
@@ -205,10 +207,13 @@ body {
 .header {
     grid-area: header;
     font-size: 2em;
+    letter-spacing: 6px;
+    margin-bottom: 60px;
 }
 
 #soundbanks {
     grid-area: soundbank;
+    // justify-self: right;
 }
 
 #shape {
@@ -217,6 +222,7 @@ body {
 
 #bpms {
     grid-area: bpms;
+    // justify-self: left;
 }
 
 #dotsChooser {
@@ -238,6 +244,7 @@ body {
 
 #controls {
     grid-area: controls;
+    margin-top: 30px;
 }
 
 #secondaryControls {

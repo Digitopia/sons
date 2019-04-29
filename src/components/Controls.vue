@@ -1,7 +1,7 @@
 <template>
     <div class="controls">
-        <div v-if="isPwa" class="control fullscreen">
-            <FontAwesomeIcon icon="expand" @click="toggleFullscreen()" />
+        <div v-if="!isPwa && isFullscreenCapable" class="control fullscreen">
+            <FontAwesomeIcon icon="expand" @click="toggleFullscreen" />
             <span>FULLSCREEN</span>
         </div>
         <div v-else></div>
@@ -70,6 +70,7 @@ export default {
 
     computed: {
         ...mapState(['playing', 'dotActive', 'isPwa']),
+        isFullscreenCapable: () => screenfull.enabled,
     },
 
     watch: {
@@ -112,7 +113,7 @@ export default {
         },
 
         toggleFullscreen() {
-            if (screenfull.enabled) screenfull.toggle()
+            screenfull.toggle()
         },
     },
 }
@@ -128,6 +129,7 @@ export default {
         font-size: 2em;
         &:hover {
             cursor: pointer;
+            color: rgba(0, 0, 0, 0.8);
         }
         &:focus {
             outline: none;

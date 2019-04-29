@@ -59,7 +59,7 @@ export default {
     --border: var(--border-width) solid black;
     --border-bg: 1px solid var(--white);
     --border-sep: 1px dashed var(--light-grey);
-    --bpm-side: 3em;
+    --bpm-side: 2.7em;
     div {
         text-align: center;
     }
