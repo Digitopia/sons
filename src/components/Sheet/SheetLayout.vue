@@ -1,6 +1,6 @@
 <template>
     <div class="sheetContainer">
-        <svg>
+        <svg id="canvas">
             <g class="time-signature">
                 <text
                     id="numerator"
@@ -21,14 +21,14 @@
                 </text>
             </g>
 
-            <g class="lines">
+            <!-- <g class="lines">
                 <line
                     v-for="(line, idx) in lines"
                     :key="`line-${idx}`"
                     class="sheet-line"
                     v-bind="line"
                 />
-            </g>
+            </g> -->
 
             <g class="labels">
                 <text
@@ -151,6 +151,11 @@ export default {
 <style lang="scss">
 @import '../../assets/styles/bravura-regular';
 
+// @font-face {
+//     font-family: 'bravuraregular';
+//     src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/67868/Bravura.woff');
+// }
+
 .sheetContainer {
     text-align: center;
     transition: all 0.4s ease;
@@ -171,5 +176,10 @@ export default {
 .time-signature {
     font-family: 'bravuraregular';
     font-size: 30px;
+}
+
+text {
+    // font-family: 'Courier New', Courier, monospace;
+    font-family: 'Bravura';
 }
 </style>

@@ -97,14 +97,14 @@ export default {
     },
 
     watch: {
-        dot: function() {
+        dot() {
             const diff = this.ndots - this.notes.length
             if (diff > 0) {
                 // adding dots
                 for (let i = 0; i < diff; i++) this.notes.push(NoteFactory())
             } else {
                 // removing dots
-                this.notes.slice(0, this.ndots)
+                this.setNotes(this.notes.slice(0, this.ndots))
             }
 
             // when would try to play dots not shown in shape
@@ -134,7 +134,6 @@ export default {
         //     return false
         // }
 
-        console.log('going to create', this.ndots, 'notes')
         for (let i = 0; i < this.ndots; i++) {
             this.notes.push(NoteFactory())
         }
@@ -146,6 +145,7 @@ export default {
             'togglePlaying',
             'toggleSheet',
             'setDotActive',
+            'setNotes',
         ]),
 
         trash() {
@@ -204,7 +204,7 @@ body {
         '.           dotsChooser .'
         '.           controls    secondaryControls'
         'sheetToggle .           .'
-        '.           sheet       .';
+        '.           sheet   .';
 }
 
 .header {
@@ -285,5 +285,7 @@ body {
 #sheet {
     grid-area: sheet;
     transition: opacity 1s linear;
+    width: 100%;
+    height: 100%;
 }
 </style>

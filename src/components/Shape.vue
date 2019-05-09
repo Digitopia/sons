@@ -2,15 +2,21 @@
     <div class="shape" @shake="shaked">
         <svg id="svg" width="100%" height="100%">
             <g class="lines">
-                <line
+                <path
                     v-for="(line, idx) in lines"
                     :key="idx"
-                    v-bind="line"
                     stroke="black"
                     stroke-width="10"
-                    class="line animated fadeIn slow"
-                />
+                    class="animated fadeIn slow"
+                    fill="none"
+                    :d="
+                        `M${line.x1} ${line.y1} Q ${line.x3} ${line.y3} ${
+                            line.x2
+                        } ${line.y2}`
+                    "
+                ></path>
             </g>
+
             <g class="dots">
                 <g v-for="(dot, idx) in dots" :key="`dot-${idx}`">
                     <circle
@@ -23,8 +29,8 @@
                         class="dot animated"
                         :class="{ active: idx === dotActive }"
                         @click.prevent.stop="click(idx)"
-                        @dragover.prevent.stop="drag"
-                        @drop.prevent="click(idx)"
+                        @dragover.stop="drag"
+                        @drop="click(idx)"
                     ></circle>
 
                     <!-- Label dots for debug purposes -->
@@ -115,21 +121,7 @@ export default {
         init() {
             this.loop = new Tone.Loop(time => {
                 const previousActiveDot = this.dotActive
-
-                let idxDotActive
-
-                if (this.dot === 2) {
-                    console.log('this.dot is 2')
-                    if (this.dotActive === 1) {
-                        if (this.previousActiveDot === 0) idxDotActive = 2
-                        else idxDotActive = 0
-                    } else if (this.dotActive === 2) idxDotActive = 1
-                    else idxDotActive = (this.dotActive + 1) % this.ndots
-                } else {
-                    idxDotActive = (this.dotActive + 1) % this.ndots
-                }
-
-                console.log({ idxDotActive })
+                const idxDotActive = (this.dotActive + 1) % this.ndots
                 this.setDotActive(idxDotActive)
                 this.previousActiveDot = previousActiveDot
                 const idx = this.dotActive
@@ -151,15 +143,18 @@ export default {
         },
 
         dotChanged({ idx, src, sample }) {
+            // @NOTE: silently ignore event of offbeat when dots=2
+            if (idx >= this.dots.length) return
+            46
             Vue.set(this.dots[idx], 'image', src)
             Vue.set(this.dots[idx], 'sample', sample)
         },
 
         reset(newDot, oldDot) {
             const diff = newDot - oldDot
-            const nlines = this.dot === 4 || this.dot === 3 ? this.dot : 1
+            const nlines = this.dot
             if (diff < 0) {
-                const dotsToKeep = newDot == 2 ? 3 : newDot * 2
+                const dotsToKeep = newDot * 2
                 this.dots = this.dots.slice(0, dotsToKeep)
                 this.lines = this.lines.slice(0, nlines)
             } else {
@@ -177,11 +172,19 @@ export default {
                     pairs.forEach(pair => {
                         const idx1 = pair[0]
                         const idx2 = pair[1]
+                        const x1 = this.dots[idx1].x
+                        const y1 = this.dots[idx1].y
+                        const x2 = this.dots[idx2].x
+                        const y2 = this.dots[idx2].y
+                        const x3 = (x1 + x2) / 2
+                        const y3 = (y1 + y2) / 2
                         this.lines.push({
-                            x1: this.dots[idx1].x,
-                            y1: this.dots[idx1].y,
-                            x2: this.dots[idx2].x,
-                            y2: this.dots[idx2].y,
+                            x1,
+                            x2,
+                            y1,
+                            y2,
+                            x3,
+                            y3,
                         })
                     })
                 }
@@ -189,11 +192,11 @@ export default {
                     createNewDotsFrom([0, 0])
                     createNewLinesFrom([[6, 0]])
                 } else if (oldDot === 2 && newDot == 3) {
-                    createNewDotsFrom([2, 2, 1])
-                    createNewLinesFrom([[2, 4], [2, 0]])
+                    createNewDotsFrom([0, 0])
+                    createNewLinesFrom([[0, 4]])
                 } else if (oldDot === 2 && newDot == 4) {
-                    createNewDotsFrom([2, 2, 2, 2, 2])
-                    createNewLinesFrom([[2, 4], [4, 6], [6, 2]])
+                    createNewDotsFrom([0, 0, 0, 0])
+                    createNewLinesFrom([[2, 4], [4, 6]])
                 }
             }
         },
@@ -206,20 +209,20 @@ export default {
         },
 
         dotStepped({ idx, note, time }) {
-            console.log('dotStepped', idx)
-            const r = this.r
+            // console.log('dotStepped', { idx, note, time })
+            const { r } = this
             const dot = this.$refs[`dot-${idx}`]
             const animationSpeed = 0.08
-            const originalR = this.dots[idx].isSmall ? 0.75 * this.r : this.r
+            const originalR = idx % 2 === 1 ? 0.75 * this.r : this.r
             TweenMax.to(dot, animationSpeed, {
                 attr: { r: r * 1.5 },
                 onComplete: () => {
                     TweenMax.to(dot, animationSpeed, { attr: { r: originalR } })
                 },
             })
-            if (note.sample === '') return
-            if (idx === 0) this.players[note.bank].volume.value = 0
-            else if (idx % 2 === 0) this.players[note.bank].volume.value = -6
+            if (!note || note.sample === '') return
+            const db = idx === 0 ? 0 : -6
+            this.players[note.bank].volume.value = db
             this.players[note.bank].get(note.sample).start(time)
         },
 
@@ -247,7 +250,15 @@ export default {
                     TweenMax.to(this.dots[idx], animationSpeed, { x, y })
                 }
             }
-            const updateLine = (idx, x1, y1, x2, y2) => {
+            const updateLine = (
+                idx,
+                x1,
+                y1,
+                x2,
+                y2,
+                x3 = (x1 + x2) / 2,
+                y3 = (y1 + y2) / 2
+            ) => {
                 if (!this.lines[idx]) {
                     this.lines.splice(idx, 1, { x1, y1, x2, y2 })
                 }
@@ -256,22 +267,30 @@ export default {
                     Vue.set(this.lines[idx], 'y1', y1)
                     Vue.set(this.lines[idx], 'x2', x2)
                     Vue.set(this.lines[idx], 'y2', y2)
+                    Vue.set(this.lines[idx], 'x3', x3)
+                    Vue.set(this.lines[idx], 'y3', y3)
                 } else {
                     TweenMax.to(this.lines[idx], animationSpeed, {
                         x1,
                         y1,
                         x2,
                         y2,
+                        x3,
+                        y3,
                     })
                 }
             }
 
+            const ym = (y2 - y1) / 2 + y1
             switch (this.dot) {
                 case 2:
                     updateDot(0, x3, y1, animate)
+                    updateDot(1, x3 + rb / 4, ym, animate)
                     updateDot(2, x3, y2, animate)
-                    updateDot(1, x3, (y2 - y1) / 2 + y1, animate)
-                    updateLine(0, x3, y1, x3, y2)
+                    updateDot(3, x3 - rb / 4, ym, animate)
+                    // updateLine(0, x3, y1, x3, y2)
+                    updateLine(0, x3, y1, x3, y2, x3 + rb / 2, ym)
+                    updateLine(1, x3, y2, x3, y1, x3 - rb / 2, ym)
                     break
 
                 case 3:

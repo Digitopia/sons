@@ -13,7 +13,7 @@ const store = new Vuex.Store({
         bankActive: 'aula',
         sampleActive: null,
         bpm: 60,
-        dot: 2,
+        dot: 3,
         dots: [2, 3, 4],
         dotActive: -1,
         notes: [],
@@ -29,8 +29,7 @@ const store = new Vuex.Store({
         },
 
         ndots: state => {
-            if (state.dot === 2) return 3
-            else return state.dot * 2
+            return state.dot * 2
         },
     },
 
@@ -57,6 +56,10 @@ const store = new Vuex.Store({
 
         setNote(state, { idx, note }) {
             state.notes[idx] = note
+        },
+
+        setNotes(state, notes) {
+            state.notes = notes
         },
 
         clearNotes(state) {

@@ -85,7 +85,7 @@ export default {
     },
 
     methods: {
-        ...mapMutations(['togglePlaying', 'setDotActive']),
+        ...mapMutations(['togglePlaying', 'setDotActive', 'setPlaying']),
 
         play() {
             if (Tone.context.state === 'suspended') Tone.context.resume()
