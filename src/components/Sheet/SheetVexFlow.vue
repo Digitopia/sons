@@ -17,6 +17,7 @@ export default {
         this.$root.$on('dotstep', this.dotStepped)
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotsclear', this.clear)
+        this.$root.$on('stop', this.stop)
         this.vfNotes = this.getVfNotes()
     },
 
@@ -131,9 +132,21 @@ export default {
             this.context.closeGroup()
         },
 
+        stop() {
+            // NOTE: hacky but does the trick
+            const paths = document.querySelectorAll(
+                "#sheet path[fill='var(--accent)']"
+            )
+            paths.forEach(path => path.removeAttribute('fill'))
+
+            const strokes = document.querySelectorAll(
+                "#sheet path[stroke='var(--accent)"
+            )
+            strokes.forEach(stroke => stroke.setAttribute('stroke', 'black'))
+        },
+
         dotChanged(evt) {
             this.update()
-            console.log(this.vfNotes)
         },
 
         /**
@@ -150,36 +163,10 @@ export default {
             this.vfNotes.reduce()
         },
 
-        dotStepped({ idx, note, time }) {
-            // Highlight current note
-            // const el = document.querySelectorAll('.vf-stavenote')[idx]
-            // console.log(el)
-            // el.setAttribute('fill', 'var(--accent)')
-
-            // 0 1 2 3 4
-            // 8 (0.5) 8 (0.5) 4 (1)
-
-            // TODO: convert idx of dots to idx of notation (harder than it seems)
-            // const tick = idx * 0.5
-            // let idxHighlight
-            // this.vfNotes.reduce((total, val, index, arr) => {
-            //     if (total >= tick) {
-            //         console.log('finish going to return', index)
-            //         idxHighlight = index
-            //         arr.splice(1) // mutation in order to break from reduce
-            //         console.log('this souldnt run')
-            //     }
-            //     console.log('this might not run')
-            //     const duration = this.vfNotes[index].duration
-            //     const durationTicks = this.convertVfDurationToHuman(duration)
-            //     // console.log({ duration, durationTicks })
-            //     console.log('going to next iter with', total + durationTicks)
-            // }, 0)
-
+        dotStepped({ idx }) {
             const tick = idx * 0.5
             const accumTick = (total, notes, index) => {
                 if (total > tick) {
-                    console.log('returning with', { total, tick, index })
                     return index - 1
                 } else if (total === tick) return index
                 const duration = notes[index].duration
@@ -187,8 +174,6 @@ export default {
                 return accumTick(total + durationTicks, notes, ++index)
             }
             const idxHighlight = accumTick(0, this.vfNotes.slice(0), 0)
-
-            console.log({ idxHighlight })
 
             try {
                 this.update(false)
@@ -198,7 +183,7 @@ export default {
                 })
                 this.draw()
             } catch (e) {
-                console.log('failint silently')
+                console.log('tried to highlight an invalid vfNote')
             }
 
             // const r = this.r

@@ -96,6 +96,7 @@ export default {
         stop() {
             Tone.Transport.stop()
             this.setDotActive(-1)
+            this.$root.$emit('stop')
         },
 
         record() {
