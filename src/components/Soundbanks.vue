@@ -21,7 +21,8 @@
         </tr>
         <tr v-for="register in registers" :key="register">
             <th>
-                {{ register | wordize }}<br />
+                {{ register | wordize }}
+                <br />
                 ({{ register | firstLetter }})
             </th>
             <td v-for="(sound, idx) in getSounds(register, bank.id)" :key="idx">
@@ -36,6 +37,7 @@
                     :class="{ active: sampleActive === sound }"
                     :data-sample="sound.sample"
                     @dragstart="drag($event, sound)"
+                    @dragend="dragend"
                     @click.prevent.stop="touchstart(sound)"
                     @touchstart.prevent.stop="touchstart(sound)"
                 />
@@ -68,6 +70,7 @@ export default {
     data() {
         return {
             registers: ['agudos', 'medios', 'graves'],
+            dragging: false,
         }
     },
 
@@ -105,6 +108,7 @@ export default {
         },
 
         drag(evt, sound) {
+            this.dragging = true
             this.touchstart(sound)
             evt.dataTransfer.setData(
                 'sample',
@@ -113,8 +117,14 @@ export default {
             evt.dataTransfer.setData('src', evt.target.src)
         },
 
+        dragend() {
+            this.dragging = false
+        },
+
         touchstart(sound) {
-            const sampleActive = sound !== this.sampleActive ? sound : undefined
+            let sampleActive = sound !== this.sampleActive ? sound : undefined
+            if (this.dragging && sampleActive === undefined)
+                sampleActive = this.sampleActive
             this.setSampleActive(sampleActive)
         },
     },

@@ -47,7 +47,7 @@
                         @drop.prevent="click(idx)"
                         @click="click(idx)"
                         @touchstart="click(idx)"
-                    />
+                    ></image>
                 </g>
             </g>
         </svg>
@@ -108,8 +108,6 @@ export default {
 
     mounted() {
         this.init()
-
-        // TODO: will it work with @ notation?
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotstep', this.dotStepped)
         this.$root.$on('dotsclear', this.clear)
