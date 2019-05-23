@@ -28,9 +28,9 @@
                         :r="dot.isSmall ? r * 0.75 : r"
                         class="dot animated"
                         :class="{ active: idx === dotActive }"
-                        @click.prevent.stop="click(idx)"
+                        @click.prevent.stop="click($event, idx)"
                         @dragover.stop="drag"
-                        @drop="click(idx)"
+                        @drop="click($event, idx)"
                     ></circle>
 
                     <!-- Label dots for debug purposes -->
@@ -43,10 +43,16 @@
                         :y="dot.y - r * factor"
                         :width="r * 2 * factor"
                         :height="r * 2 * factor"
+                        :data-dot="idx"
+                        class="draggable"
                         @dragover.prevent.stop="drag"
-                        @drop.prevent="click(idx)"
-                        @click="click(idx)"
+                        @drop.prevent="click($event, idx)"
+                        @click="click($event, idx)"
                         @touchstart="click(idx)"
+                        @xdragstart="dragstart($event, idx)"
+                        @xdrag="drag"
+                        @xdragend="dragend($event, idx)"
+                        @click.middle="remove($event, idx)"
                     ></image>
                 </g>
             </g>
@@ -62,6 +68,8 @@ import { mapState, mapMutations, mapGetters } from 'vuex'
 import { TweenMax } from 'gsap/TweenMax'
 
 import { NoteFactory } from '@/store'
+
+import { Draggable } from 'gsap/Draggable'
 
 export default {
     name: 'Shape',
@@ -111,6 +119,50 @@ export default {
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotstep', this.dotStepped)
         this.$root.$on('dotsclear', this.clear)
+
+        // window.Draggable = Draggable
+
+        // this.draggables = []
+        // document.querySelectorAll('.draggable').forEach(elem => {
+        //     const draggable = Draggable.create(elem, {
+        //         cursor: 'pointer',
+        //         onPress: e => {
+        //             if (!e.srcElement.getAttribute('xlink:href')) return
+        //         },
+        //         onDragEnd: e => {
+        //             console.log('DragEnd', e)
+        //         },
+        //         onRelease: e => {
+        //             console.log('release')
+        //             const { matrix } = e.srcElement.transform.baseVal.getItem(0)
+        //             const dx = Math.abs(matrix.e)
+        //             const dy = Math.abs(matrix.f)
+        //             console.log({ dx, dy })
+        //             if (dx >= 20 || dy >= 20) {
+        //                 const classes = ['animated', 'faster', 'fadeOut']
+        //                 e.srcElement.classList.add(...classes)
+        //                 setTimeout(() => {
+        //                     e.srcElement.classList.remove(...classes)
+        //                     const idx = e.srcElement.getAttribute('data-dot')
+        //                     console.log({ idx })
+        //                     Vue.set(this.dots[idx], 'image', '')
+        //                     Vue.set(this.dots[idx], 'sample', '')
+        //                     e.srcElement.removeAttribute('transform')
+        //                 }, 500)
+        //             } else {
+        //                 setTimeout(
+        //                     () => e.srcElement.removeAttribute('transform'),
+        //                     10
+        //                 )
+        //             }
+        //         },
+        //     })[0]
+        //     this.draggables.push(draggable)
+        // })
+
+        // this.draggables.forEach(draggable => {
+        //     draggable.disable()
+        // })
     },
 
     methods: {
@@ -143,9 +195,9 @@ export default {
         dotChanged({ idx, src, sample }) {
             // @NOTE: silently ignore event of offbeat when dots=2
             if (idx >= this.dots.length) return
-            46
             Vue.set(this.dots[idx], 'image', src)
             Vue.set(this.dots[idx], 'sample', sample)
+            // this.draggables[idx].enable()
         },
 
         reset(newDot, oldDot) {
@@ -321,7 +373,8 @@ export default {
             }
         },
 
-        click(idx) {
+        click(evt, idx) {
+            console.log({ which: evt.which })
             if (!this.sampleActive) return
             const note = NoteFactory(this.bank.id, this.sampleActive.sample)
             this.setNote({ idx, note })
@@ -332,7 +385,28 @@ export default {
             })
         },
 
-        drag() {},
+        drag() {
+            console.log('draggin a shape')
+        },
+
+        dragstart(evt, idx) {
+            console.log('dragstart')
+        },
+
+        dragend(evt, idx) {
+            console.log('dragend')
+        },
+
+        remove(evt, idx) {
+            console.log('removing', evt, idx)
+            const note = NoteFactory('', '')
+            this.setNote({ idx, note })
+            this.$root.$emit('dotchange', {
+                idx,
+                ...note,
+                src: '',
+            })
+        },
     },
 }
 </script>
