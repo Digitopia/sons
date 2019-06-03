@@ -1,6 +1,6 @@
 <template>
     <Transition appear appear-active-class="animated fadeIn slow">
-        <div v-cloak id="app" class="no-select" @resize="resize">
+        <div v-cloak id="app" @resize="resize">
             <h2 class="header">CAÇA SONS</h2>
 
             <Soundbanks id="soundbanks" />
@@ -49,7 +49,7 @@
                 enter-active-class="animated bounceInDown"
                 leave-active-class="animated bounceOutUp"
             >
-                <Sheet v-show="showSheet" id="sheet" />
+                <SheetVexFlow v-show="showSheet" id="sheet" />
             </Transition>
         </div>
     </Transition>
@@ -60,7 +60,7 @@ import Soundbanks from '@/components/Soundbanks'
 import Shape from '@/components/Shape'
 import BpmChooser from '@/components/BpmChooser'
 import Controls from '@/components/Controls'
-import Sheet from '@/components/Sheet/Sheet'
+import SheetVexFlow from '@/components/SheetVexFlow'
 
 import { mapState, mapMutations, mapGetters } from 'vuex'
 import { debounce } from 'lodash'
@@ -74,7 +74,7 @@ export default {
         BpmChooser,
         Controls,
         Shape,
-        Sheet,
+        SheetVexFlow,
         Soundbanks,
     },
 
@@ -107,7 +107,7 @@ export default {
                 this.setNotes(this.notes.slice(0, this.ndots))
             }
 
-            // when would try to play dots not shown in shape
+            // when would try to play dots already not shown in shape
             if (
                 this.playing &&
                 diff < 0 &&

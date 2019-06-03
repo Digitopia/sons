@@ -147,10 +147,11 @@ export default {
             Vue.set(this.dots[evt.idx], 'image', evt.src)
         },
 
-        dotStepped({ idx }) {
-            const r = this.r
-            const dot = this.$el.querySelectorAll('.dot')[idx]
-            const animationSpeed = 0.08
+        dotStepped() {
+            // dotStepped({ idx }) {
+            // const r = this.r
+            // const dot = this.$el.querySelectorAll('.dot')[idx]
+            // const animationSpeed = 0.08
             // TweenMax.to(dot, animationSpeed, {
             //     attr: { r: r * 1.5 },
             //     onComplete: () => {

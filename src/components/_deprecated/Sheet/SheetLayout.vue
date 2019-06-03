@@ -149,12 +149,8 @@ export default {
 </script>
 
 <style lang="scss">
-@import '../../assets/styles/bravura-regular';
-
-// @font-face {
-//     font-family: 'bravuraregular';
-//     src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/67868/Bravura.woff');
-// }
+// @import '../../assets/styles/bravura-regular';
+// @import '../../assets/styles/bravura-regular';
 
 .sheetContainer {
     text-align: center;

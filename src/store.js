@@ -31,6 +31,16 @@ const store = new Vuex.Store({
         ndots: state => {
             return state.dot * 2
         },
+
+        getIcon: (state, getters) => (bankId, sample) => {
+            return getters
+                .getBank(bankId)
+                .sounds.find(sound => sound.sample === sample).icon
+        },
+
+        getBank: state => bankId => {
+            return state.banks.find(bank => bank.id === bankId)
+        },
     },
 
     mutations: {
@@ -93,7 +103,7 @@ const store = new Vuex.Store({
             }
             const bank = state.banks.find(bank => bank.id === id)
             const { sounds } = bank
-            const path = `sounds/${id}`
+            const path = `banks/sounds/${id}`
             const paths = sounds.map(sound => `${path}/${sound.sample}`)
             const mappings = {}
             paths.forEach((path, idx) => (mappings[sounds[idx].sample] = path))

@@ -5,7 +5,7 @@ export default [
         sounds: [
             {
                 register: 'agudos',
-                icon: 'assets/img/aula/snap.svg',
+                icon: 'banks/aula/icons/snap.svg',
                 sample: 'snap.mp3',
             },
             {
@@ -25,7 +25,7 @@ export default [
             },
             {
                 register: 'medios',
-                icon: 'assets/img/aula/clap.svg',
+                icon: 'banks/aula/icons/clap.svg',
                 sample: 'clap.mp3',
             },
             {
@@ -45,7 +45,7 @@ export default [
             },
             {
                 register: 'graves',
-                icon: 'assets/img/aula/kick.svg',
+                icon: 'banks/aula/icons/kick.svg',
                 sample: 'kick.mp3',
             },
             {
@@ -71,7 +71,7 @@ export default [
         sounds: [
             {
                 register: 'agudos',
-                icon: 'assets/img/orff/flute.svg',
+                icon: 'bank/orff/icons/flute.svg',
                 sample: 'recorder.wav',
             },
             {
@@ -91,7 +91,7 @@ export default [
             },
             {
                 register: 'medios',
-                icon: 'assets/img/orff/xylophone.svg',
+                icon: 'bank/orff/icons/xylophone.svg',
                 sample: 'xylophone.wav',
             },
             {
@@ -111,7 +111,7 @@ export default [
             },
             {
                 register: 'graves',
-                icon: 'assets/img/orff/marimba.png',
+                icon: 'bank/orff/icons/marimba.png',
                 sample: 'marimba.wav',
             },
             {

@@ -1,9 +1,38 @@
+<template>
+    <div class="sheetContainer">
+        <MountingPortal v-if="loaded" mount-to="#sheetId" append target-tag="g">
+            <image
+                v-for="(image, index) in vfImages"
+                :key="index"
+                :x="image.x"
+                :y="image.y"
+                :width="image.width"
+                :height="image.height"
+                v-bind="{ 'xlink:href': image.src }"
+            />
+        </MountingPortal>
+    </div>
+</template>
+
 <script>
-import { mapState } from 'vuex'
+import { MountingPortal } from 'portal-vue'
+import { mapState, mapGetters } from 'vuex'
 
 export default {
+    components: {
+        MountingPortal,
+    },
+
+    data() {
+        return {
+            vfImages: [],
+            loaded: false,
+        }
+    },
+
     computed: {
         ...mapState(['notes', 'dot', 'banks']),
+        ...mapGetters(['ndots', 'getIcon']),
     },
 
     watch: {
@@ -24,6 +53,7 @@ export default {
     mounted() {
         this.init()
         this.update()
+        this.loaded = true
     },
 
     methods: {
@@ -31,7 +61,8 @@ export default {
             const VF = window.Vex.Flow
 
             // Remove previous sheet if already exists (when changing dots for instance)
-            const el = document.querySelector('#sheet > svg')
+            // const el = document.querySelector('#sheet > svg')
+            const el = document.querySelector('.sheetContainer > svg')
             if (el) {
                 this.clearSvg()
                 el.remove()
@@ -39,12 +70,16 @@ export default {
 
             this.renderer = new window.Vex.Flow.Renderer(
                 document.querySelector('.sheetContainer'),
+                // document.querySelector('#sheetSvg'),
                 VF.Renderer.Backends.SVG
             )
-            this.renderer.resize(
-                this.$parent.$el.clientWidth,
-                this.$parent.$el.clientHeight
-            )
+            this.renderer.resize(200, 200) // TODO:
+            // this.renderer.resize(
+            //     this.$parent.$el.clientWidth,
+            //     this.$parent.$el.clientHeight
+            // )
+
+            this.renderer.ctx.svg.setAttribute('id', 'sheetId')
 
             // Create a stave at position 10, 40 of width 400 on the canvas.
             this.stave = new VF.Stave(10, 0, 300, {
@@ -104,15 +139,51 @@ export default {
                 }
                 if (useFullRest) i++
                 vfNotes.push(new VF.StaveNote(noteParams))
+                vfNotes.forEach(vfNote =>
+                    vfNote.setStyle({
+                        fillStyle: 'var(--accent)',
+                        strokeStyle: 'var(--accent)',
+                    })
+                )
             }
             return vfNotes
         },
 
         update(draw = true) {
             this.clearSvg()
-            this.group = this.context.openGroup()
+            this.group = this.context.openGroup('vfNotes')
             this.vfNotes = this.getVfNotes()
             if (draw) this.draw()
+            this.drawIcons()
+            this.group.parentNode.insertBefore(
+                this.group,
+                this.$el.querySelector('.vue-portal-target')
+            )
+        },
+
+        drawIcons() {
+            this.vfImages = []
+            for (let idx = 0; idx < this.ndots; idx++) {
+                const vfIdx = this.convertNoteIdxToVfNoteIdx(idx)
+                const vf = this.vfNotes[vfIdx]
+                const { bank, sample } = this.$store.state.notes[idx]
+                if (!sample) continue
+                const { x, y } = vf.note_heads[0]
+                const notehead = vf.attrs.el.querySelector('.vf-notehead')
+                let { width, height } = notehead.getBoundingClientRect()
+                const factor = 0.6
+                height *= factor
+                // width *= factor
+                const src = this.getIcon(bank, sample)
+                this.vfImages.push({
+                    vfIdx,
+                    x: x - width / 8,
+                    y: y - height / 2,
+                    width,
+                    height,
+                    src,
+                })
+            }
         },
 
         clearSvg() {
@@ -127,6 +198,10 @@ export default {
             const beams = VF.Beam.generateBeams(this.vfNotes)
             VF.Formatter.FormatAndDraw(this.context, this.stave, this.vfNotes)
             beams.forEach(beam => {
+                beam.setStyle({
+                    fillStyle: 'var(--accent)',
+                    strokeStyle: 'var(--accent)',
+                })
                 beam.setContext(this.context).draw()
             })
             this.context.closeGroup()
@@ -145,7 +220,7 @@ export default {
             strokes.forEach(stroke => stroke.setAttribute('stroke', 'black'))
         },
 
-        dotChanged(evt) {
+        dotChanged() {
             this.update()
         },
 
@@ -159,12 +234,8 @@ export default {
             else if (vfDuration.charAt(0) === '8') return 0.5
         },
 
-        getStaveNoteFromIdx(idx) {
-            this.vfNotes.reduce()
-        },
-
-        dotStepped({ idx }) {
-            const tick = idx * 0.5
+        convertNoteIdxToVfNoteIdx(noteIdx) {
+            const tick = noteIdx * 0.5
             const accumTick = (total, notes, index) => {
                 if (total > tick) {
                     return index - 1
@@ -173,13 +244,31 @@ export default {
                 const durationTicks = this.convertVfDurationToHuman(duration)
                 return accumTick(total + durationTicks, notes, ++index)
             }
-            const idxHighlight = accumTick(0, this.vfNotes.slice(0), 0)
+            const vfIdx = accumTick(0, this.vfNotes.slice(0), 0)
+            return vfIdx
+        },
+
+        dotStepped({ idx }) {
+            // const tick = idx * 0.5
+            // const accumTick = (total, notes, index) => {
+            //     if (total > tick) {
+            //         return index - 1
+            //     } else if (total === tick) return index
+            //     const duration = notes[index].duration
+            //     const durationTicks = this.convertVfDurationToHuman(duration)
+            //     return accumTick(total + durationTicks, notes, ++index)
+            // }
+            // const idxHighlight = accumTick(0, this.vfNotes.slice(0), 0)
+
+            const idxHighlight = this.convertNoteIdxToVfNoteIdx(idx)
 
             try {
                 this.update(false)
                 this.vfNotes[idxHighlight].setStyle({
-                    fillStyle: 'var(--accent)',
-                    strokeStyle: 'var(--accent)',
+                    // fillStyle: 'var(--accent)',
+                    // strokeStyle: 'var(--accent)',
+                    fillStyle: 'black',
+                    strokeStyle: 'black',
                 })
                 this.draw()
             } catch (e) {

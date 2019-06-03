@@ -32,7 +32,7 @@
                 />
                 <img
                     v-else
-                    :src="require(`@/${sound.icon}`)"
+                    :src="sound.icon"
                     :alt="`image for ${sound.icon}`"
                     :class="{ active: sampleActive === sound }"
                     :data-sample="sound.sample"

@@ -18,12 +18,12 @@
         "gsap": "^2.0.2",
         "imports-loader": "^0.8.0",
         "lodash": "^4.17.11",
+        "portal-vue": "^2.1.5",
         "register-service-worker": "^1.5.2",
         "sass-loader": "^7.1.0",
         "screenfull": "^4.0.0",
         "shake.js": "^1.2.2",
         "tone": "^13.4.9",
-        "vexflow": "^1.2.89",
         "vue": "^2.5.22",
         "vue-holderjs": "^1.0.2",
         "vuex": "^3.0.1"

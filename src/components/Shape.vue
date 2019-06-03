@@ -47,7 +47,7 @@
                         class="draggable"
                         @dragover.prevent.stop="drag"
                         @drop.prevent="click($event, idx)"
-                        @click="click($event, idx)"
+                        @click.exact="click($event, idx)"
                         @touchstart="click(idx)"
                         @xdragstart="dragstart($event, idx)"
                         @xdrag="drag"
@@ -68,8 +68,6 @@ import { mapState, mapMutations, mapGetters } from 'vuex'
 import { TweenMax } from 'gsap/TweenMax'
 
 import { NoteFactory } from '@/store'
-
-import { Draggable } from 'gsap/Draggable'
 
 export default {
     name: 'Shape',
@@ -374,7 +372,6 @@ export default {
         },
 
         click(evt, idx) {
-            console.log({ which: evt.which })
             if (!this.sampleActive) return
             const note = NoteFactory(this.bank.id, this.sampleActive.sample)
             this.setNote({ idx, note })
@@ -389,13 +386,13 @@ export default {
             console.log('draggin a shape')
         },
 
-        dragstart(evt, idx) {
-            console.log('dragstart')
-        },
+        // dragstart(evt, idx) {
+        //     console.log('dragstart')
+        // },
 
-        dragend(evt, idx) {
-            console.log('dragend')
-        },
+        // dragend(evt, idx) {
+        //     console.log('dragend')
+        // },
 
         remove(evt, idx) {
             console.log('removing', evt, idx)
@@ -425,10 +422,10 @@ svg {
 }
 .dot {
     fill: var(--accent);
-    &.active {
-        // stroke: var(--dark-grey);
-        // stroke-width: 5px;
-    }
+    // &.active {
+    //     stroke: var(--dark-grey);
+    //     stroke-width: 5px;
+    // }
     image {
         width: 50px;
     }
