@@ -81,7 +81,14 @@ export default {
     },
 
     computed: {
-        ...mapState(['dot', 'dotActive', 'players', 'sampleActive', 'playing']),
+        ...mapState([
+            'dot',
+            'dotActive',
+            'isEraserOn',
+            'players',
+            'playing',
+            'sampleActive',
+        ]),
 
         ...mapGetters(['bank', 'ndots']),
 
@@ -164,7 +171,7 @@ export default {
     },
 
     methods: {
-        ...mapMutations(['setDotActive', 'setNote']),
+        ...mapMutations(['setDotActive', 'setNote', 'clearNote']),
 
         init() {
             this.loop = new Tone.Loop(time => {
@@ -226,14 +233,7 @@ export default {
                         const y2 = this.dots[idx2].y
                         const x3 = (x1 + x2) / 2
                         const y3 = (y1 + y2) / 2
-                        this.lines.push({
-                            x1,
-                            x2,
-                            y1,
-                            y2,
-                            x3,
-                            y3,
-                        })
+                        this.lines.push({ x1, x2, y1, y2, x3, y3 })
                     })
                 }
                 if (oldDot === 3 && newDot === 4) {
@@ -372,7 +372,17 @@ export default {
         },
 
         click(evt, idx) {
-            if (!this.sampleActive) return
+            if (!this.sampleActive && !this.isEraserOn) return
+            if (this.isEraserOn) {
+                console.log('clearing note', idx)
+                this.clearNote(idx)
+                this.$root.$emit('dotchange', {
+                    idx,
+                    ...NoteFactory(),
+                    src: '',
+                })
+                return
+            }
             const note = NoteFactory(this.bank.id, this.sampleActive.sample)
             this.setNote({ idx, note })
             this.$root.$emit('dotchange', {

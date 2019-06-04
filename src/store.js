@@ -21,6 +21,7 @@ const store = new Vuex.Store({
         playing: false,
         showSheet: true,
         isPwa: false,
+        isEraserOn: false,
     },
 
     getters: {
@@ -62,10 +63,20 @@ const store = new Vuex.Store({
 
         setSampleActive(state, val) {
             state.sampleActive = val
+            state.isEraserOn = false
+        },
+
+        toggleEraser(state) {
+            if (!state.isEraserOn) state.sampleActive = null
+            state.isEraserOn = !state.isEraserOn
         },
 
         setNote(state, { idx, note }) {
             state.notes[idx] = note
+        },
+
+        clearNote(state, idx) {
+            state.notes[idx] = NoteFactory()
         },
 
         setNotes(state, notes) {

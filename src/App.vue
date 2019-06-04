@@ -23,7 +23,23 @@
             <Controls id="controls" />
 
             <div id="secondaryControls">
-                <FontAwesomeIcon icon="trash" class="trash" @click="trash" />
+                <ul>
+                    <li>
+                        <FontAwesomeIcon
+                            icon="trash"
+                            class="trash"
+                            @click="trash"
+                        />
+                    </li>
+                    <li>
+                        <FontAwesomeIcon
+                            icon="eraser"
+                            class="trash"
+                            :class="{ eraserActive: isEraserOn }"
+                            @click="$store.commit('toggleEraser')"
+                        />
+                    </li>
+                </ul>
             </div>
 
             <div id="sheetToggle" @click="toggleSheet()">
@@ -86,14 +102,15 @@ export default {
 
     computed: {
         ...mapState([
+            'banks',
             'dot',
             'dots',
+            'isEraserOn',
+            'isPwa',
             'notes',
             'playing',
             'sampleActive',
-            'isPwa',
             'showSheet',
-            'banks',
         ]),
 
         ...mapGetters(['ndots']),
@@ -156,10 +173,11 @@ export default {
     methods: {
         ...mapMutations([
             'changeDot',
-            'togglePlaying',
-            'toggleSheet',
             'setDotActive',
             'setNotes',
+            'toggleEraser',
+            'togglePlaying',
+            'toggleSheet',
         ]),
 
         trash() {
@@ -277,9 +295,20 @@ body {
 
 #secondaryControls {
     grid-area: secondaryControls;
+    ul {
+        padding: 0;
+        li {
+            list-style: none;
+        }
+    }
+    .eraserActive {
+        background: var(--accent);
+    }
     .trash {
         margin-top: 20px;
-        background: var(--light-grey);
+        // background: var(--light-grey);
+        border: 1px solid var(--light-grey);
+        border-radius: 50%;
         width: 30px !important;
         height: 30px;
         border-radius: 50%;
@@ -287,7 +316,8 @@ body {
         // transition: all 0.1s linear;
         &:hover {
             cursor: pointer;
-            color: var(--accent);
+            // color: var(--accent);
+            border-color: var(--accent);
             // background: var(--dark-grey);
         }
     }

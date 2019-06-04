@@ -182,6 +182,7 @@ table {
         height: 40px;
         &:hover {
             cursor: pointer;
+            border: 1px solid var(--accent) !important;
         }
         &.active {
             background: var(--accent);
