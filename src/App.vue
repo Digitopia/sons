@@ -63,7 +63,7 @@ import Controls from '@/components/Controls'
 import SheetVexFlow from '@/components/SheetVexFlow'
 
 import { mapState, mapMutations, mapGetters } from 'vuex'
-import { debounce } from 'lodash'
+// import { debounce } from 'lodash'
 
 import { NoteFactory } from '@/store'
 
@@ -79,7 +79,9 @@ export default {
     },
 
     data() {
-        return {}
+        return {
+            bpms: [44, 52, 60, 80, 100, 120, 140],
+        }
     },
 
     computed: {
@@ -188,6 +190,15 @@ export default {
 
 @import url('https://fonts.googleapis.com/css?family=Lato');
 
+html {
+    background: radial-gradient(
+            50% 50% at 50% 50%,
+            #ffffff 0%,
+            rgba(248, 187, 43, 0.25) 100%
+        )
+        no-repeat 100% 0% / 100% 100%;
+}
+
 html,
 body {
     box-sizing: border-box;
@@ -204,7 +215,7 @@ body {
     display: grid;
     justify-items: center;
     align-items: center;
-    grid-template-columns: 30fr 40fr 30fr;
+    grid-template-columns: 25fr 50fr 25fr;
     grid-gap: 10px;
     grid-template-areas:
         'header      header      header'
@@ -220,6 +231,12 @@ body {
     font-size: 2em;
     letter-spacing: 6px;
     margin-bottom: 60px;
+    user-select: auto;
+    -webkit-user-select: auto;
+    -ms-user-select: auto;
+    -webkit-touch-callout: auto;
+    -o-user-select: auto;
+    -moz-user-select: auto;
 }
 
 #soundbanks {
@@ -267,10 +284,11 @@ body {
         height: 30px;
         border-radius: 50%;
         padding: 10px;
-        transition: all 0.1s linear;
+        // transition: all 0.1s linear;
         &:hover {
             cursor: pointer;
-            background: var(--dark-grey);
+            color: var(--accent);
+            // background: var(--dark-grey);
         }
     }
 }

@@ -110,7 +110,7 @@ export default {
 
             const w = this.$el.clientWidth
             this.renderer.resize(
-                w,
+                w * 0.75,
                 200
                 // this.$parent.$el.clientHeight
             )
@@ -137,8 +137,11 @@ export default {
             //     .format([voice], 400)
 
             this.context = this.renderer.getContext()
+            const scaleFactor = 1.25
+            this.context.scale(scaleFactor, scaleFactor)
 
-            // this.context.scale(1.25, 1.25)
+            this.renderer.ctx.svg.style.position = 'relative'
+            this.renderer.ctx.svg.style.left = `-${w * (scaleFactor - 1)}px`
 
             this.stave.addTimeSignature(`${this.dot}/4`)
             this.stave.setContext(this.context).draw()

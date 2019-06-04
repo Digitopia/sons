@@ -128,9 +128,11 @@ export default {
     text-align: center;
     svg {
         font-size: 2em;
+        // transition: all 0.1s linear;
         &:hover {
             cursor: pointer;
-            color: rgba(0, 0, 0, 0.8);
+            // transform: scale(1.05);
+            color: var(--accent);
         }
         &:focus {
             outline: none;

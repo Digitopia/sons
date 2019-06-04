@@ -55,11 +55,12 @@ export default {
 
 <style lang="scss">
 .bpms {
-    --border-width: 6px;
+    --border-width: 3px;
     --border: var(--border-width) solid black;
     --border-bg: 1px solid var(--white);
-    --border-sep: 1px dashed var(--light-grey);
+    --border-sep: 2px dashed var(--dark-grey);
     --bpm-side: 2.7em;
+    box-shadow: 3px 3px 5px var(--dark-grey);
     div {
         text-align: center;
     }
