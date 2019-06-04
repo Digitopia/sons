@@ -1,6 +1,12 @@
 <template>
     <div class="sheetContainer">
-        <MountingPortal v-if="loaded" mount-to="#sheetId" append target-tag="g">
+        <MountingPortal
+            v-if="loaded"
+            ref="portal"
+            mount-to="#sheetId"
+            append
+            target-tag="g"
+        >
             <defs>
                 <!-- eslint-disable vue/attribute-hyphenation -->
                 <!-- NOTE: make sure attr tableValues doesn't get converted to table-values -->
@@ -58,8 +64,11 @@ export default {
 
     watch: {
         dot() {
+            this.loaded = false
+            console.log(this.$refs.portal)
             this.init()
             this.update()
+            this.loaded = true
         },
     },
 
@@ -68,6 +77,7 @@ export default {
         this.$root.$on('dotchange', this.dotChanged)
         this.$root.$on('dotsclear', this.clear)
         this.$root.$on('stop', this.stop)
+        this.$root.$on('debouncedresize', this.resize)
         this.vfNotes = this.getVfNotes()
     },
 
@@ -78,6 +88,10 @@ export default {
     },
 
     methods: {
+        resize() {
+            console.log('debounce resizing in vexflow')
+        },
+
         init() {
             // Remove previous sheet if already exists (when changing dots for instance)
             // const el = document.querySelector('#sheet > svg')
@@ -91,25 +105,29 @@ export default {
                 document.querySelector('.sheetContainer'),
                 VF.Renderer.Backends.SVG
             )
-            this.renderer.resize(200, 200) // TODO:
-            // this.renderer.resize(
-            //     this.$parent.$el.clientWidth,
-            //     this.$parent.$el.clientHeight
-            // )
+
+            // this.renderer.resize(200, 200) // TODO:
+
+            const w = this.$el.clientWidth
+            this.renderer.resize(
+                w,
+                200
+                // this.$parent.$el.clientHeight
+            )
 
             this.renderer.ctx.svg.setAttribute('id', 'sheetId')
 
             // Create a stave at position x, y and of width 400 on the canvas
-            this.stave = new VF.Stave(10, 0, 300, {
+            this.stave = new VF.Stave(0, 0, w, {
                 // vertical_bar_width: 10, // width around vertical bar end-marker
                 glyph_spacing_px: 20,
                 num_lines: 5,
                 // fill_style: '#999999',
-                left_bar: false, // draw vertical bar on left
-                right_bar: false, // draw vertical bar on right
+                // left_bar: false, // draw vertical bar on left
+                // right_bar: false, // draw vertical bar on right
                 // spacing_between_lines_px: 14, // in pixels
-                space_above_staff_ln: 0, // in staff lines
-                space_below_staff_ln: 0, // in staff lines
+                space_above_staff_ln: 1, // in staff lines
+                space_below_staff_ln: 1, // in staff lines
                 // top_text_position: 100, // in staff lines
             })
 
@@ -120,7 +138,7 @@ export default {
 
             this.context = this.renderer.getContext()
 
-            this.context.scale(1.25, 1.25)
+            // this.context.scale(1.25, 1.25)
 
             this.stave.addTimeSignature(`${this.dot}/4`)
             this.stave.setContext(this.context).draw()
@@ -185,7 +203,7 @@ export default {
             for (let idx = 0; idx < this.ndots; idx++) {
                 const vfIdx = this.convertNoteIdxToVfNoteIdx(idx)
                 const vf = this.vfNotes[vfIdx]
-                const { bank, sample } = this.$store.state.notes[idx]
+                const { bank, sample } = this.notes[idx]
                 if (!sample) continue
                 const { x, y } = vf.note_heads[0]
                 if (!vf.attrs.el) continue

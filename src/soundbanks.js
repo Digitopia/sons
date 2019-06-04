@@ -1,7 +1,7 @@
 export default [
     {
         id: 'aula',
-        name: 'Sons da Saula de Aula',
+        name: 'Saula de Aula',
         sounds: [
             {
                 register: 'agudos',

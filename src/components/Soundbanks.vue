@@ -1,5 +1,5 @@
 <template>
-    <table cellpadding="0" cellspacing="0" class="soundbank">
+    <table class="soundbank">
         <tr>
             <th colspan="100%" class="bank-title">
                 <span
@@ -22,8 +22,8 @@
         <tr v-for="register in registers" :key="register">
             <th>
                 {{ register | wordize }}
-                <br />
-                ({{ register | firstLetter }})
+                <!-- <br /> -->
+                <!-- ({{ register | firstLetter }}) -->
             </th>
             <td v-for="(sound, idx) in getSounds(register, bank.id)" :key="idx">
                 <img
@@ -132,11 +132,25 @@ export default {
 </script>
 
 <style lang="scss">
+table {
+    border: 1px solid var(--light-grey);
+    box-shadow: 3px 3px 5px var(--light-grey);
+    border-radius: 5px !important;
+    border-spacing: 0;
+    tr:first-child th {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+    tr:last-child th {
+        border-bottom-left-radius: 5px;
+    }
+    tr:last-child td:last-of-type {
+        border-bottom-right-radius: 5px;
+    }
+}
+
 .soundbank {
     text-align: center;
-    table {
-        border: 1px solid var(--light-grey);
-    }
     th {
         background: var(--dark-grey);
         color: white;

@@ -1,6 +1,6 @@
 <template>
     <Transition appear appear-active-class="animated fadeIn slow">
-        <div v-cloak id="app" @resize="resize">
+        <div v-cloak id="app">
             <h2 class="header">CAÇA SONS</h2>
 
             <Soundbanks id="soundbanks" />
@@ -121,6 +121,10 @@ export default {
     created() {
         document.addEventListener('keypress', this.keypress)
 
+        window.addEventListener('resize', () => {
+            this.$root.$emit('debouncedresize')
+        })
+
         this.$store.commit(
             'setIsPwa',
             new URLSearchParams(window.location.search).get('utm_source') ===
@@ -165,10 +169,6 @@ export default {
                     break
             }
         },
-
-        resize() {
-            debounce(() => this.$root.$emit('debouncedresize'), 100)
-        },
     },
 }
 </script>
@@ -184,14 +184,14 @@ html,
 body {
     box-sizing: border-box;
     max-width: 1000px;
-    height: 100vh;
     margin: 0 auto;
     font-family: 'Lato', sans-serif;
-    height: 100vh;
+    // height: 100vh;
     background: var(--bg);
 }
 
 #app {
+    height: 100vh;
     margin-top: 60px;
     display: grid;
     justify-items: center;
