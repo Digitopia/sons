@@ -209,7 +209,7 @@ export default {
                 if (!vf.attrs.el) continue
                 const notehead = vf.attrs.el.querySelector('.vf-notehead')
                 let { width, height } = notehead.getBoundingClientRect()
-                const factor = 0.6
+                const factor = 0.7
                 height *= factor
                 // width *= factor
                 const src = this.getIcon(bank, sample)

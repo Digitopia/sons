@@ -91,6 +91,7 @@ export default {
             'sampleActive',
             'isPwa',
             'showSheet',
+            'banks',
         ]),
 
         ...mapGetters(['ndots']),
@@ -141,6 +142,13 @@ export default {
         for (let i = 0; i < this.ndots; i++) {
             this.notes.push(NoteFactory())
         }
+
+        // preload images
+        this.banks.forEach(bank => {
+            bank.sounds.forEach(sound => {
+                new Image().src = sound.icon
+            })
+        })
     },
 
     methods: {
