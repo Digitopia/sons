@@ -60,14 +60,23 @@ export default {
     --border-bg: 1px solid var(--white);
     --border-sep: 2px dashed var(--dark-grey);
     --bpm-side: 2.7em;
-    box-shadow: 3px 3px 5px var(--dark-grey);
     div {
         text-align: center;
     }
     &:hover {
         cursor: pointer;
     }
+    border-radius: 5px;
+    box-shadow: 0 0 5px var(--dark-grey);
     .bpm {
+        &:first-child {
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+        &:last-child {
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
         box-sizing: border-box;
         width: var(--bpm-side);
         height: var(--bpm-side);

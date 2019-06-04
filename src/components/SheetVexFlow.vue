@@ -1,5 +1,5 @@
 <template>
-    <div class="sheetContainer">
+    <div ref="container" class="sheetContainer">
         <MountingPortal
             v-if="loaded"
             ref="portal"
@@ -39,11 +39,25 @@
 </template>
 
 <script>
-import { MountingPortal } from 'portal-vue'
 import { mapState, mapGetters } from 'vuex'
+import { MountingPortal } from 'portal-vue'
+
 import Vex from 'vexflow'
 
 const VF = Vex.Flow
+
+const staveOptions = {
+    // vertical_bar_width: 10, // width around vertical bar end-marker
+    glyph_spacing_px: 20,
+    num_lines: 5,
+    // fill_style: '#999999',
+    // left_bar: false, // draw vertical bar on left
+    // right_bar: false, // draw vertical bar on right
+    // spacing_between_lines_px: 14, // in pixels
+    space_above_staff_ln: 1, // in staff lines
+    space_below_staff_ln: 1, // in staff lines
+    // top_text_position: 100, // in staff lines
+}
 
 export default {
     components: {
@@ -59,16 +73,14 @@ export default {
 
     computed: {
         ...mapState(['notes', 'dot', 'banks']),
+
         ...mapGetters(['ndots', 'getIcon']),
     },
 
     watch: {
         dot() {
-            this.loaded = false
-            console.log(this.$refs.portal)
-            this.init()
+            this.createStave()
             this.update()
-            this.loaded = true
         },
     },
 
@@ -92,6 +104,17 @@ export default {
             console.log('debounce resizing in vexflow')
         },
 
+        createStave() {
+            if (this.staveGroup) this.context.svg.removeChild(this.staveGroup)
+            const w = this.$el.clientWidth
+            this.stave = new VF.Stave(0, 0, w, staveOptions)
+            this.stave.addTimeSignature(`${this.dot}/4`)
+            this.staveGroup = this.context.openGroup()
+            this.stave.setContext(this.context).draw()
+            this.context.closeGroup()
+            this.context.svg.insertBefore(this.staveGroup, this.group)
+        },
+
         init() {
             // Remove previous sheet if already exists (when changing dots for instance)
             // const el = document.querySelector('#sheet > svg')
@@ -106,8 +129,6 @@ export default {
                 VF.Renderer.Backends.SVG
             )
 
-            // this.renderer.resize(200, 200) // TODO:
-
             const w = this.$el.clientWidth
             this.renderer.resize(
                 w * 0.75,
@@ -117,25 +138,6 @@ export default {
 
             this.renderer.ctx.svg.setAttribute('id', 'sheetId')
 
-            // Create a stave at position x, y and of width 400 on the canvas
-            this.stave = new VF.Stave(0, 0, w, {
-                // vertical_bar_width: 10, // width around vertical bar end-marker
-                glyph_spacing_px: 20,
-                num_lines: 5,
-                // fill_style: '#999999',
-                // left_bar: false, // draw vertical bar on left
-                // right_bar: false, // draw vertical bar on right
-                // spacing_between_lines_px: 14, // in pixels
-                space_above_staff_ln: 1, // in staff lines
-                space_below_staff_ln: 1, // in staff lines
-                // top_text_position: 100, // in staff lines
-            })
-
-            // // Format and justify the notes to 400 pixels.
-            // var formatter = new VF.Formatter()
-            //     .joinVoices([voice])
-            //     .format([voice], 400)
-
             this.context = this.renderer.getContext()
             const scaleFactor = 1.25
             this.context.scale(scaleFactor, scaleFactor)
@@ -143,8 +145,7 @@ export default {
             this.renderer.ctx.svg.style.position = 'relative'
             this.renderer.ctx.svg.style.left = `-${w * (scaleFactor - 1)}px`
 
-            this.stave.addTimeSignature(`${this.dot}/4`)
-            this.stave.setContext(this.context).draw()
+            this.createStave()
         },
 
         getVfNotes() {

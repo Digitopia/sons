@@ -299,6 +299,9 @@ body {
         padding: 0;
         li {
             list-style: none;
+            svg {
+                // background: var(--light-grey);
+            }
         }
     }
     .eraserActive {

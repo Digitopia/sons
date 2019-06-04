@@ -133,8 +133,8 @@ export default {
 
 <style lang="scss">
 table {
-    border: 1px solid var(--light-grey);
-    box-shadow: 3px 3px 5px var(--light-grey);
+    // border: 1px solid var(--light-grey);
+    box-shadow: 0 0 10px var(--dark-grey);
     border-radius: 5px !important;
     border-spacing: 0;
     tr:first-child th {
