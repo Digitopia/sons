@@ -257,7 +257,7 @@ export default {
         },
 
         dotStepped({ idx, note, time }) {
-            // console.log('dotStepped', { idx, note, time })
+            console.log('dotStepped', { idx, note, time })
             const { r } = this
             const dot = this.$refs[`dot-${idx}`]
             const animationSpeed = 0.08

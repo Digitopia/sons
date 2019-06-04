@@ -71,7 +71,7 @@ export default [
         sounds: [
             {
                 register: 'agudos',
-                icon: 'bank/orff/icons/flute.svg',
+                icon: 'banks/orff/icons/flute.svg',
                 sample: 'recorder.wav',
             },
             {
@@ -91,7 +91,7 @@ export default [
             },
             {
                 register: 'medios',
-                icon: 'bank/orff/icons/xylophone.svg',
+                icon: 'banks/orff/icons/xylophone.svg',
                 sample: 'xylophone.wav',
             },
             {
@@ -111,7 +111,7 @@ export default [
             },
             {
                 register: 'graves',
-                icon: 'bank/orff/icons/marimba.png',
+                icon: 'banks/orff/icons/marimba.png',
                 sample: 'marimba.wav',
             },
             {

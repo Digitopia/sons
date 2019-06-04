@@ -147,7 +147,7 @@ export default {
             Vue.set(this.dots[evt.idx], 'image', evt.src)
         },
 
-        dotStepped() {
+        dotStepped(evt) {
             // dotStepped({ idx }) {
             // const r = this.r
             // const dot = this.$el.querySelectorAll('.dot')[idx]

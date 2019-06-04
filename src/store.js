@@ -103,8 +103,9 @@ const store = new Vuex.Store({
             }
             const bank = state.banks.find(bank => bank.id === id)
             const { sounds } = bank
-            const path = `banks/sounds/${id}`
-            const paths = sounds.map(sound => `${path}/${sound.sample}`)
+            const paths = sounds.map(
+                sound => `banks/${id}/sounds/${sound.sample}`
+            )
             const mappings = {}
             paths.forEach((path, idx) => (mappings[sounds[idx].sample] = path))
             state.players[id] = new Tone.Players(mappings).toMaster()

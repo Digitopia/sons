@@ -1,6 +1,19 @@
 <template>
     <div class="sheetContainer">
         <MountingPortal v-if="loaded" mount-to="#sheetId" append target-tag="g">
+            <defs>
+                <!-- eslint-disable vue/attribute-hyphenation -->
+                <!-- NOTE: make sure attr tableValues doesn't get converted to table-values -->
+                <!-- NOTE: eslint handles this normally, but in this case doesn't since there's no svg wrapper element -->
+                <filter id="f1">
+                    <feComponentTransfer color-interpolation-filters="sRGB">
+                        <feFuncR type="table" tableValues="1 0" />
+                        <feFuncG type="table" tableValues="1 0" />
+                        <feFuncB type="table" tableValues="1 0" />
+                    </feComponentTransfer>
+                </filter>
+                <!-- eslint-enable vue/attribute-hyphenation-->
+            </defs>
             <image
                 v-for="(image, index) in vfImages"
                 :key="index"
@@ -8,7 +21,12 @@
                 :y="image.y"
                 :width="image.width"
                 :height="image.height"
-                v-bind="{ 'xlink:href': image.src }"
+                :data-idx="image.idx"
+                :data-order="image.order"
+                v-bind="{
+                    'xlink:href': image.src,
+                    filter: !image.playing ? 'url(#f1)' : '',
+                }"
             />
         </MountingPortal>
     </div>
@@ -17,6 +35,9 @@
 <script>
 import { MountingPortal } from 'portal-vue'
 import { mapState, mapGetters } from 'vuex'
+import Vex from 'vexflow'
+
+const VF = Vex.Flow
 
 export default {
     components: {
@@ -58,8 +79,6 @@ export default {
 
     methods: {
         init() {
-            const VF = window.Vex.Flow
-
             // Remove previous sheet if already exists (when changing dots for instance)
             // const el = document.querySelector('#sheet > svg')
             const el = document.querySelector('.sheetContainer > svg')
@@ -68,9 +87,8 @@ export default {
                 el.remove()
             }
 
-            this.renderer = new window.Vex.Flow.Renderer(
+            this.renderer = new VF.Renderer(
                 document.querySelector('.sheetContainer'),
-                // document.querySelector('#sheetSvg'),
                 VF.Renderer.Backends.SVG
             )
             this.renderer.resize(200, 200) // TODO:
@@ -81,7 +99,7 @@ export default {
 
             this.renderer.ctx.svg.setAttribute('id', 'sheetId')
 
-            // Create a stave at position 10, 40 of width 400 on the canvas.
+            // Create a stave at position x, y and of width 400 on the canvas
             this.stave = new VF.Stave(10, 0, 300, {
                 // vertical_bar_width: 10, // width around vertical bar end-marker
                 glyph_spacing_px: 20,
@@ -109,7 +127,6 @@ export default {
         },
 
         getVfNotes() {
-            const VF = window.Vex.Flow
             const vfNotes = []
             for (let i = 0; i < this.notes.length; i++) {
                 const note = this.notes[i]
@@ -141,8 +158,8 @@ export default {
                 vfNotes.push(new VF.StaveNote(noteParams))
                 vfNotes.forEach(vfNote =>
                     vfNote.setStyle({
-                        fillStyle: 'var(--accent)',
-                        strokeStyle: 'var(--accent)',
+                        fillStyle: 'black',
+                        strokeStyle: 'black',
                     })
                 )
             }
@@ -153,8 +170,10 @@ export default {
             this.clearSvg()
             this.group = this.context.openGroup('vfNotes')
             this.vfNotes = this.getVfNotes()
-            if (draw) this.draw()
-            this.drawIcons()
+            if (draw) {
+                this.draw()
+                this.drawIcons()
+            }
             this.group.parentNode.insertBefore(
                 this.group,
                 this.$el.querySelector('.vue-portal-target')
@@ -169,6 +188,7 @@ export default {
                 const { bank, sample } = this.$store.state.notes[idx]
                 if (!sample) continue
                 const { x, y } = vf.note_heads[0]
+                if (!vf.attrs.el) continue
                 const notehead = vf.attrs.el.querySelector('.vf-notehead')
                 let { width, height } = notehead.getBoundingClientRect()
                 const factor = 0.6
@@ -182,6 +202,9 @@ export default {
                     width,
                     height,
                     src,
+                    playing: false,
+                    order: this.vfImages.length,
+                    idx,
                 })
             }
         },
@@ -194,13 +217,12 @@ export default {
         },
 
         draw() {
-            const VF = window.Vex.Flow
             const beams = VF.Beam.generateBeams(this.vfNotes)
             VF.Formatter.FormatAndDraw(this.context, this.stave, this.vfNotes)
             beams.forEach(beam => {
                 beam.setStyle({
-                    fillStyle: 'var(--accent)',
-                    strokeStyle: 'var(--accent)',
+                    fillStyle: 'black',
+                    strokeStyle: 'black',
                 })
                 beam.setContext(this.context).draw()
             })
@@ -249,46 +271,25 @@ export default {
         },
 
         dotStepped({ idx }) {
-            // const tick = idx * 0.5
-            // const accumTick = (total, notes, index) => {
-            //     if (total > tick) {
-            //         return index - 1
-            //     } else if (total === tick) return index
-            //     const duration = notes[index].duration
-            //     const durationTicks = this.convertVfDurationToHuman(duration)
-            //     return accumTick(total + durationTicks, notes, ++index)
-            // }
-            // const idxHighlight = accumTick(0, this.vfNotes.slice(0), 0)
-
-            const idxHighlight = this.convertNoteIdxToVfNoteIdx(idx)
+            const vfNoteIdx = this.convertNoteIdxToVfNoteIdx(idx)
 
             try {
                 this.update(false)
-                this.vfNotes[idxHighlight].setStyle({
-                    // fillStyle: 'var(--accent)',
-                    // strokeStyle: 'var(--accent)',
-                    fillStyle: 'black',
-                    strokeStyle: 'black',
+                this.vfNotes[vfNoteIdx].setStyle({
+                    fillStyle: 'var(--accent)',
+                    strokeStyle: 'var(--accent)',
                 })
                 this.draw()
+                this.vfImages.forEach(img => (img.playing = false))
+                const img = this.$el.querySelector(`image[data-idx='${idx}']`)
+                if (img) {
+                    const vfImgOrder = img.getAttribute('data-order')
+                    this.vfImages.forEach(img => (img.playing = false))
+                    this.vfImages[vfImgOrder].playing = true
+                }
             } catch (e) {
-                console.log('tried to highlight an invalid vfNote')
+                console.error('tried to highlight an invalid vfNote', e.stack)
             }
-
-            // const r = this.r
-            // const dot = this.$refs[`dot-${idx}`]
-            // const animationSpeed = 0.08
-            // const originalR = this.dots[idx].isSmall ? 0.75 * this.r : this.r
-            // TweenMax.to(dot, animationSpeed, {
-            //     attr: { r: r * 1.5 },
-            //     onComplete: () => {
-            //         TweenMax.to(dot, animationSpeed, { attr: { r: originalR } })
-            //     },
-            // })
-            // if (note.sample === '') return
-            // if (idx === 0) this.players[note.bank].volume.value = 0
-            // else if (idx % 2 === 0) this.players[note.bank].volume.value = -6
-            // this.players[note.bank].get(note.sample).start(time)
         },
 
         clear() {
@@ -303,20 +304,3 @@ export default {
     },
 }
 </script>
-
-<style lang="scss">
-#foo {
-    // width: 100%;
-    height: 100px;
-    margin: 0 auto;
-}
-
-// .vf-notehead path {
-//     fill: var(--accent);
-// }
-
-text {
-    // font-family: 'Courier New', Courier, monospace;
-    font-family: 'Bravura';
-}
-</style>
