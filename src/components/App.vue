@@ -1,7 +1,6 @@
 <template>
     <Transition appear appear-active-class="animated fadeIn slow">
         <div v-cloak id="subapp">
-            <router-link to="audios">Go to audios</router-link>
             <h2 class="header">CAÇA SONS</h2>
 
             <Soundbanks id="soundbanks" />
