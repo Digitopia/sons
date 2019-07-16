@@ -1,3 +1,6 @@
+# Need this to test locally, but make sure not to commit upstream
+public/all.json
+
 Todo.md
 
 .DS_Store

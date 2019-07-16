@@ -60,23 +60,29 @@ export default {
     --border-bg: 1px solid var(--white);
     --border-sep: 2px dashed var(--dark-grey);
     --bpm-side: 2.7em;
+
     div {
         text-align: center;
     }
+
     &:hover {
         cursor: pointer;
     }
+
     border-radius: 5px;
     box-shadow: 0 0 5px var(--dark-grey);
+
     .bpm {
         &:first-child {
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
         }
+
         &:last-child {
             border-bottom-left-radius: 5px;
             border-bottom-right-radius: 5px;
         }
+
         box-sizing: border-box;
         width: var(--bpm-side);
         height: var(--bpm-side);
@@ -84,24 +90,30 @@ export default {
         align-items: center;
         font-size: 1em;
     }
+
     @media (min-width: 768px) {
         .bpm {
             border-bottom: var(--border-sep);
             border-left: var(--border);
             border-right: var(--border);
+
             &:first-child {
                 border-top: var(--border);
             }
+
             &:last-child {
                 border-bottom: var(--border);
             }
+
             &.active {
                 border: var(--border-width) solid var(--accent) !important;
                 font-weight: bold;
             }
+
             &.prev-active {
                 border-bottom: var(--border-bg);
             }
+
             &.next-active {
                 border-top: var(--border-bg);
             }
@@ -110,20 +122,27 @@ export default {
     @media (max-width: 768px) {
         display: flex;
         .bpm {
-            border: none;
+            border-top-style: none;
+            border-right-style: none;
+            border-left-style: none;
+            border-bottom-style: none;
             border-right: var(--border-sep);
             border-top: var(--border);
             border-bottom: var(--border);
+
             &:first-child {
                 border-left: var(--border);
             }
+
             &:last-child {
                 border-right: var(--border);
             }
+
             &.active {
                 border: var(--border-width) solid var(--accent) !important;
                 font-weight: bold;
             }
+
             &.prev-active {
                 border-right: none;
             }

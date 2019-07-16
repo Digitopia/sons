@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "postbuild": "node scripts/compile_jsons.js",
+    "preserve": "NODE_ENV=development npm run postbuild"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.19",
@@ -13,7 +15,9 @@
     "@fortawesome/free-solid-svg-icons": "^5.9.0",
     "@fortawesome/vue-fontawesome": "^0.1.6",
     "@sentry/browser": "^5.5.0",
+    "@sentry/integrations": "^5.5.0",
     "animate.css": "^3.7.2",
+    "bootstrap": "^4.3.1",
     "file-saver": "^2.0.2",
     "gsap": "^2.1.3",
     "imports-loader": "^0.8.0",
@@ -39,6 +43,7 @@
     "babel-eslint": "^10.0.2",
     "eslint": "^6.0.1",
     "eslint-plugin-vue": "^5.2.3",
+    "glob": "^7.1.4",
     "node-sass": "^4.12.0",
     "vue-template-compiler": "^2.6.10"
   }

@@ -91,14 +91,6 @@ export default {
         ]),
 
         ...mapGetters(['bank', 'ndots']),
-
-        imageHeight() {
-            return 100
-        },
-
-        imageWidth() {
-            return 100
-        },
     },
 
     watch: {
@@ -193,7 +185,7 @@ export default {
         },
 
         shaked() {
-            console.log('i got shaked')
+            console.log('i got shaken')
             this.reset()
         },
 
@@ -239,10 +231,10 @@ export default {
                 if (oldDot === 3 && newDot === 4) {
                     createNewDotsFrom([0, 0])
                     createNewLinesFrom([[6, 0]])
-                } else if (oldDot === 2 && newDot == 3) {
+                } else if (oldDot === 2 && newDot === 3) {
                     createNewDotsFrom([0, 0])
                     createNewLinesFrom([[0, 4]])
-                } else if (oldDot === 2 && newDot == 4) {
+                } else if (oldDot === 2 && newDot === 4) {
                     createNewDotsFrom([0, 0, 0, 0])
                     createNewLinesFrom([[2, 4], [4, 6]])
                 }
@@ -374,7 +366,6 @@ export default {
         click(evt, idx) {
             if (!this.sampleActive && !this.isEraserOn) return
             if (this.isEraserOn) {
-                console.log('clearing note', idx)
                 this.clearNote(idx)
                 this.$root.$emit('dotchange', {
                     idx,
@@ -393,16 +384,8 @@ export default {
         },
 
         drag() {
-            console.log('draggin a shape')
+            console.log('dragging a shape')
         },
-
-        // dragstart(evt, idx) {
-        //     console.log('dragstart')
-        // },
-
-        // dragend(evt, idx) {
-        //     console.log('dragend')
-        // },
 
         remove(evt, idx) {
             console.log('removing', evt, idx)

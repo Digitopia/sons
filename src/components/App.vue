@@ -81,7 +81,7 @@ import SheetVexFlow from '@/components/SheetVexFlow'
 import { mapState, mapMutations, mapGetters } from 'vuex'
 // import { debounce } from 'lodash'
 
-import { NoteFactory } from '@/store'
+import { NoteFactory } from '@/store.js'
 
 export default {
     name: 'App',
@@ -314,7 +314,6 @@ body {
         border-radius: 50%;
         width: 30px !important;
         height: 30px;
-        border-radius: 50%;
         padding: 10px;
         // transition: all 0.1s linear;
         &:hover {
