@@ -205,7 +205,6 @@ export default {
 @import '../assets/styles/globals';
 @import '../assets/styles/breakpoints';
 @import '~animate.css';
-
 @import url('https://fonts.googleapis.com/css?family=Lato');
 
 html {
