@@ -1,4 +1,5 @@
 module.exports = {
+    publicPath: '/sons/',
     pwa: {
         themeColor: '#F7BC3D',
     },
