@@ -24,8 +24,8 @@ if (process.env.NODE_ENV !== 'development') {
 const router = new VueRouter({
     mode: 'history',
     routes: [
-        { path: '/', component: index },
-        { path: '/audios', component: audios },
+        { path: '/sons', component: index },
+        { path: '/sons/audios', component: audios },
     ],
 })
 

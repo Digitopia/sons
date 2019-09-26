@@ -17,14 +17,14 @@
                         `https://source.unsplash.com/random?classroom?sig=${idx}`
                     "
                 /> -->
-                <img class="card-img-top" :src="audio.image" />
+                <img class="card-img-top" :src="`/sons/${audio.image}`" />
                 <div class="card-body">
                     <h5 class="card-title">{{ audio.title }}</h5>
                     <p class="card-text">
                         {{ audio.description }}
                     </p>
                     <audio controls>
-                        <source :src="audio.audio" />
+                        <source :src="`${audio.audio}`" />
                     </audio>
                     <p class="card-text">
                         <small class="text-muted"
