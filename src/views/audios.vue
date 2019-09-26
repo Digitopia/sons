@@ -5,7 +5,7 @@
             Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsam,
             delectus vitae animi eveniet excepturi omnis optio repellendus
             aspernatur, laudantium dolores cumque tempore! Quia quasi fugit id
-            assumenda molestiae! Cumque, adipisci?
+            assumenda molestiae!
         </p>
         <!-- <div class="card-columns mt-5"> -->
         <div class="card-columns mt-5">
