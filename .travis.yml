@@ -2,8 +2,9 @@ language: node_js
 node_js:
   "node"
 cache:
-  directories:
-    "node_modules"
+  # directories:
+  #   "node_modules"
+  npm: false
 script:
   npm run build
 deploy:
