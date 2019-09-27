@@ -7,7 +7,9 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "postbuild": "node scripts/compile_jsons.js",
-    "preserve": "NODE_ENV=development npm run postbuild"
+    "preserve": "NODE_ENV=development npm run postbuild",
+    "audios": "live-server public",
+    "preaudios": "NODE_ENV=development npm run postbuild"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.19",
@@ -31,7 +33,6 @@
     "vexflow": "^1.2.89",
     "vue": "^2.6.10",
     "vue-holderjs": "^1.0.2",
-    "vue-router": "^3.0.7",
     "vuex": "^3.1.1"
   },
   "devDependencies": {

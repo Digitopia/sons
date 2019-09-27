@@ -1,12 +1,12 @@
 backend:
     name: github
-    repo: Digitopia/CacaSons
+    repo: Digitopia/sons
     branch: master
 
 media_folder: '/audios/uploads'
 public_folder: '/audios/uploads'
 
-logo_url: https://cacasons.netlify.com/img/icons/ms-icon-310x310.png
+logo_url: https://digitopia.casadamusica.com/sons/img/icons/ms-icon-310x310.png
 
 collections:
     - name: 'audios' # Used in routes, e.g., /admin/collections/blog
