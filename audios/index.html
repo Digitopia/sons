@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+        <title>Caça Sons - Audios</title>
+
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        />
+
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+
+        <style>
+            :root {
+                --accent: rgb(248, 187, 43);
+            }
+            audio {
+                width: 100%;
+            }
+
+            h1 {
+                color: var(--accent);
+            }
+
+            .card-title {
+                color: var(--accent);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container mt-5" id="audios">
+            <h1>Gravações Caça Sons</h1>
+            <p class="mt-5">
+                Página que contém os resultados finais do projecto Caça-Sons, 
+                uma oficina do Serviço Educativo Casa da Música/Worten Digitópia Casa da Música.
+                Formadores: Rui Rodrigues e Tiago Oliveira.
+            </p>
+            <div class="card-columns mt-5">
+                <div v-for="(audio, idx) in audios" :key="idx" class="card">
+                    <img class="card-img-top" :src="`/sons${audio.image}`" />
+                    <div class="card-body">
+                        <h5 class="card-title">{{ audio.title }}</h5>
+                        <p class="card-text">
+                            {{ audio.description }}
+                        </p>
+                        <audio controls>
+                            <source :src="`/sons${audio.audio}`" />
+                        </audio>
+                        <p class="card-text">
+                            <small class="text-muted"
+                                >Gravado em
+                                {{ new Date(audio.date).toLocaleDateString() }}</small
+                            >
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            new Vue({
+                el: '#audios',
+
+                data() {
+                    return {
+                        audios: [],
+                    }
+                },
+
+                async created() {
+                    const url = '/sons/audios/all.json'
+                    const response = await fetch(url)
+                    console.log(response)
+                    const audios = await response.json()
+                    console.log(audios)
+                    const sorted = audios.sort((a, b) =>
+                        a.date > b.date ? -1 : 1
+                    )
+                    console.log({ sorted })
+                    console.log(sorted.map(audio => audio.date))
+                    this.audios = sorted
+                },
+            })
+        </script>
+    </body>
+</html>

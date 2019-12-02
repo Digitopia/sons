@@ -1,0 +1,37 @@
+[
+    {
+        "title": "Escola 5",
+        "image": "/audios/uploads/e5.jpeg",
+        "audio": "/audios/uploads/g5.wav",
+        "description": "Descrição sobre a escola 5",
+        "date": "2019-07-01T20:18:49.436Z"
+    },
+    {
+        "title": "Escola EB1 da Caramila 19/20",
+        "image": "/audios/uploads/caramila.jpg",
+        "audio": "/audios/uploads/caramila.mp3",
+        "description": "As aventuras do Caçador de Sons: da praia à floresta.",
+        "date": "2019-11-27T20:04:34.265Z"
+    },
+    {
+        "title": "Escola EB1 João de Deus 19/20",
+        "image": "/audios/uploads/joaodedeus.jpg",
+        "audio": "/audios/uploads/joao-de-deus.mp3",
+        "description": "As aventuras do Caçador de Sons",
+        "date": "2019-11-27T20:04:54.318Z"
+    },
+    {
+        "title": "Escola 3",
+        "image": "/audios/uploads/e3.jpeg",
+        "audio": "/audios/uploads/g3.wav",
+        "description": "Lorem ipsum",
+        "date": "2019-07-14T19:05:09.292Z"
+    },
+    {
+        "title": "Escola 4",
+        "image": "/audios/uploads/e4.jpeg",
+        "audio": "/audios/uploads/g4.wav",
+        "description": "",
+        "date": "2019-07-18T19:13:42.993Z"
+    }
+]

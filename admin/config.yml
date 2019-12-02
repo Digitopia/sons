@@ -1,0 +1,44 @@
+backend:
+    name: github
+    repo: Digitopia/sons
+    branch: master
+
+media_folder: '/audios/uploads'
+public_folder: '/audios/uploads'
+
+logo_url: https://digitopia.casadamusica.com/sons/img/icons/ms-icon-310x310.png
+locale: 'pt'
+
+collections:
+    - name: 'audios' # Used in routes, e.g., /admin/collections/blog
+      label: 'Audios' # Used in the UI
+      label_singular: 'Audio'
+      folder: 'audios' # The path to the folder where the documents are stored
+      create: true # Allow users to create new documents in this collection
+      slug: '{{title}}'
+      extension: 'json'
+      format: 'json'
+      editor:
+        preview: false
+      fields: # The fields for each document, usually in front matter
+          - label: 'Title'
+            name: 'title'
+            widget: 'string'
+
+          - label: 'Image'
+            name: 'image'
+            widget: 'image'
+
+          - label: 'Audio'
+            name: 'audio'
+            widget: 'file'
+
+          - label: 'Description'
+            name: 'description'
+            widget: 'text'
+            required: false
+
+          - label: 'Date'
+            name: 'date'
+            widget: 'date'
+            dateFormat: 'DD/MM/YYYY'
